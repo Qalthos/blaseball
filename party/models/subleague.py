@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import List, Tuple, TypedDict
+from typing import List, TypedDict
 
 from blaseball_mike import database
 
@@ -45,10 +45,6 @@ class Subleague:
             remainders.extend(division.remainder)
         winners.extend(sorted(remainders, key=attrgetter("record"), reverse=True)[:2])
         return sorted(winners, key=attrgetter("record"), reverse=True)
-
-    @property
-    def playoff_cutoff(self) -> Tuple[int, int]:
-        return self.playoff[-1].record
 
     @property
     def remainder(self) -> List[Team]:

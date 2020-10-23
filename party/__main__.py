@@ -28,22 +28,21 @@ def main() -> None:
         print(subleague.name)
         print("Current playoff teams:")
         for team in subleague.playoff:
-            if team.wins - subleague.playoff_cutoff[0] > games_left:
+            if team - subleague.remainder[0] > games_left:
                 print(f"{team} 🏆")
             else:
                 print(team)
         print()
-        required_losses = games_left - subleague.playoff_cutoff[0]
+        playoff_cutoff = team
         for team in subleague.remainder:
-            party_countdown = required_losses + team.wins
-            if party_countdown <= 0:
+            required_losses = playoff_cutoff - team
+            if required_losses > games_left:
                 print(f"{team} 🥳🎉")
             else:
-                print(f"{team} {party_countdown} losses until party time")
+                print(f"{team} {required_losses} until party time")
                 points_per_game = team.wins / game_day
-                delta_to_playoffs = subleague.playoff_cutoff[0] - team.wins
-                if delta_to_playoffs > games_left * points_per_game:
-                    print(f"  Estimated to occur on day {(subleague.playoff_cutoff[0] - 99) // (points_per_game - 1) + 1:.0f}")
+                if required_losses > games_left * points_per_game:
+                    print(f"  Estimated to occur on day {(playoff_cutoff.wins - 99) // (points_per_game - 1) + 1:.0f}")
 
         print()
 

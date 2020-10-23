@@ -62,3 +62,10 @@ class Team:
 
     def __str__(self) -> str:
         return f"{self.name} {self.wins}-{self.losses}"
+
+    def __sub__(self, other: "Team") -> int:
+        """Calculate number of wins other must earn in order to pass self."""
+        difference = self.wins - other.wins
+        if other.tiebreaker > self.tiebreaker:
+            difference += 1
+        return difference

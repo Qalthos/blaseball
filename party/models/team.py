@@ -63,6 +63,10 @@ class Team:
     def color(self) -> str:
         return self._data["mainColor"]
 
+    @property
+    def championships(self) -> int:
+        return self._data["championships"]
+
     def record(self, day: int = 0) -> str:
         """Return the team record of wins and losses
 

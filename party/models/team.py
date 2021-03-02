@@ -56,12 +56,24 @@ class Team:
         return self._data["nickname"]
 
     @property
-    def record(self) -> Tuple[int, int]:
+    def emoji(self) -> str:
+        return self._data["emoji"]
+
+    @property
+    def color(self) -> str:
+        return self._data["mainColor"]
+
+    @property
+    def record(self) -> str:
+        return f"{self.wins}-{self.losses}"
+
+    @property
+    def sort(self) -> Tuple[int, int]:
         """A 2-tuple suitable for ordering teams by."""
         return (self.wins, -self.tiebreaker)
 
     def __str__(self) -> str:
-        return f"{self.name} {self.wins}-{self.losses}"
+        return f"{self.name} ({self.record})"
 
     def __sub__(self, other: "Team") -> int:
         """Calculate number of wins other must earn in order to pass self."""

@@ -1,23 +1,37 @@
+import math
+import time
+from typing import Any
+
 from blaseball_mike import database
+from rich.live import Live
+from rich.panel import Panel
+from rich.text import Text
 
 from party.models.subleague import Subleague
+from party.display import layout
 
 
-def main() -> None:
+def get_game_data() -> dict[str, Any]:
+    """Get Blaseball data and return party time predictions"""
+
     sim_data = database.get_simulation_data()
+    season_number = sim_data["season"] + 1
     game_day = sim_data["day"] + 1
     games_left = 99 - game_day
 
     # Pick out all standings
-    season = database.get_season(season_number=sim_data["season"] + 1)
+    season = database.get_season(season_number=season_number)
     standings = database.get_standings(id_=season["standings"])
 
     # Get teams
     all_teams = database.get_all_teams()
     league = database.get_league(id_=sim_data["league"])
     # IDK why this is so weird
-    tiebreakers = database.get_tiebreakers(id=league["tiebreakers"])[league["tiebreakers"]]
-    print(f"{league['name']} Day {game_day}", end="\n\n")
+    tiebreakers = database.get_tiebreakers(
+        id=league["tiebreakers"]
+    )[league["tiebreakers"]]
+
+    predictions: dict[str, list[str]] = {}
     for subleague_id in league["subleagues"]:
         subleague = Subleague.load(
             id_=subleague_id,
@@ -25,27 +39,59 @@ def main() -> None:
             standings=standings,
             tiebreakers=tiebreakers["order"],
         )
-        print(subleague.name)
-        print("Current playoff teams:")
+        teams = Text("Current playoff teams:")
         for team in subleague.playoff:
+            teams.append(f"\n{team.name}", style=team.color)
+            teams.append(f" ({team.record})")
             if team - subleague.remainder[0] > games_left:
-                print(f"{team} 🏆")
-            else:
-                print(team)
-        print()
+                teams.append(" 🏆")
+
+        teams.append("\n")
+
         playoff_cutoff = team
         for team in subleague.remainder:
-            required_losses = playoff_cutoff - team
-            if required_losses > games_left:
-                print(f"{team} 🥳🎉")
+            teams.append(f"\n{team.name}", style=team.color)
+            teams.append(f" ({team.record})")
+            to_catch = playoff_cutoff - team
+            if to_catch > games_left:
+                teams.append(" 🥳🎉")
             else:
-                print(f"{team} {required_losses} until party time")
-                points_per_game = team.wins / game_day
-                if required_losses > games_left * points_per_game:
-                    print(f"  Estimated to occur on day {(playoff_cutoff.wins - 99) // (points_per_game - 1) + 1:.0f}")
+                # Party time might not care about tiebreaker?
+                to_catch = playoff_cutoff.wins - team.wins
+                estimated_party = math.ceil(99 / ((to_catch / game_day) + 1))
+                if estimated_party < 99:
+                    teams.append(f"\n  Party estimate on day {estimated_party}")
 
-        print()
+        predictions[subleague.name] = teams
+
+    game_data = {
+        "league": league["name"],
+        "season": season_number,
+        "day": game_day,
+        "predictions": predictions,
+    }
+    return game_data
+
+
+def main() -> None:
+    game_data = get_game_data()
+    layout["header"].update(Panel(Text(
+        f"{game_data['league']} Season {game_data['season']} Day {game_data['day']}",
+        justify="center",
+    )))
+    for subleague, data in game_data["predictions"].items():
+        layout[subleague].update(Panel(
+            data,
+            title=subleague,
+        ))
 
 
 if __name__ == "__main__":
-    main()
+    with Live(layout) as live:
+        while True:
+            main()
+
+            try:
+                time.sleep(600)
+            except KeyboardInterrupt:
+                break

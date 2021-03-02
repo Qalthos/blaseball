@@ -35,7 +35,7 @@ class Division:
             )
             for team_id in data["teams"]
         ]
-        return cls(_data=data, teams=sorted(teams, key=attrgetter("record"), reverse=True))
+        return cls(_data=data, teams=sorted(teams, key=attrgetter("sort"), reverse=True))
 
     @property
     def name(self) -> str:

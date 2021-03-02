@@ -43,12 +43,12 @@ class Subleague:
         remainders = []
         for division in self.divisions:
             remainders.extend(division.remainder)
-        winners.extend(sorted(remainders, key=attrgetter("record"), reverse=True)[:2])
-        return sorted(winners, key=attrgetter("record"), reverse=True)
+        winners.extend(sorted(remainders, key=attrgetter("sort"), reverse=True)[:2])
+        return sorted(winners, key=attrgetter("sort"), reverse=True)
 
     @property
     def remainder(self) -> List[Team]:
         remainders = []
         for division in self.divisions:
             remainders.extend(division.remainder)
-        return sorted(remainders, key=attrgetter("record"), reverse=True)[2:]
+        return sorted(remainders, key=attrgetter("sort"), reverse=True)[2:]

@@ -63,8 +63,14 @@ class Team:
     def color(self) -> str:
         return self._data["mainColor"]
 
-    @property
-    def record(self) -> str:
+    def record(self, day: int = 0) -> str:
+        """Return the team record of wins and losses
+
+        If day is present, calculate wins from losses and day, in case of
+        weather.
+        """
+        if day:
+            return f"{day - self.losses}-{self.losses}"
         return f"{self.wins}-{self.losses}"
 
     @property

@@ -42,7 +42,7 @@ def get_game_data() -> dict[str, Any]:
         teams = Text("Current playoff teams:")
         for team in subleague.playoff:
             teams.append(f"\n{team.name}", style=team.color)
-            teams.append(f" ({team.record})")
+            teams.append(f" {team.wins} ({team.record(game_day)})")
             if team - subleague.remainder[0] > games_left:
                 teams.append(" 🏆")
 
@@ -51,13 +51,11 @@ def get_game_data() -> dict[str, Any]:
         playoff_cutoff = team
         for team in subleague.remainder:
             teams.append(f"\n{team.name}", style=team.color)
-            teams.append(f" ({team.record})")
+            teams.append(f" {team.wins} ({team.record(game_day)})")
             to_catch = playoff_cutoff - team
             if to_catch > games_left:
                 teams.append(" 🥳🎉")
             else:
-                # Party time might not care about tiebreaker?
-                to_catch = playoff_cutoff.wins - team.wins
                 estimated_party = math.ceil(99 / ((to_catch / game_day) + 1))
                 if estimated_party < 99:
                     teams.append(f"\n  Party estimate on day {estimated_party}")

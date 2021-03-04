@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import List, TypedDict
+from typing import List, TypedDict, Iterable, Iterator
 
 from blaseball_mike import database
 
@@ -17,6 +17,22 @@ SubleagueData = TypedDict(
         "divisions": List[str],
     },
 )
+
+
+@dataclass
+class PlayoffTeams(Iterable[Team]):
+    high: Team
+    low: Team
+    others: list[Team]
+
+    @classmethod
+    def load(self, high: Division, low: Division) -> "PlayoffTeams":
+        at_large = sorted(high.remainder + low.remainder, key=attrgetter("sort"), reverse=True)
+        return PlayoffTeams(high=high.winner, low=low.winner, others=at_large[:2])
+
+    def __iter__(self) -> Iterator[Team]:
+        winners = [self.high, self.low, *self.others]
+        return iter(sorted(winners, key=attrgetter("sort"), reverse=True))
 
 
 @dataclass
@@ -38,13 +54,8 @@ class Subleague:
         return self._data["name"]
 
     @property
-    def playoff(self) -> List[Team]:
-        winners = [division.winner for division in self.divisions]
-        remainders = []
-        for division in self.divisions:
-            remainders.extend(division.remainder)
-        winners.extend(sorted(remainders, key=attrgetter("sort"), reverse=True)[:2])
-        return sorted(winners, key=attrgetter("sort"), reverse=True)
+    def playoff_teams(self) -> PlayoffTeams:
+        return PlayoffTeams.load(*self.divisions)
 
     @property
     def remainder(self) -> List[Team]:

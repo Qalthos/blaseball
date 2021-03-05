@@ -1,4 +1,3 @@
-import math
 import time
 from typing import Any
 
@@ -59,7 +58,8 @@ def get_game_data() -> dict[str, Any]:
             if to_catch > games_left:
                 teams.append(" 🥳🎉")
             else:
-                estimated_party = math.ceil(99 / ((to_catch / game_day) + 1))
+                # Solve for (to_catch / game_day) * x > 99 - x
+                estimated_party = int(99 / ((to_catch / game_day) + 1)) + 1
                 if estimated_party < 99:
                     teams.append(f"\n  Party estimate on day {estimated_party}")
 

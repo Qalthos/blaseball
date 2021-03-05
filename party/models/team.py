@@ -47,6 +47,7 @@ TeamData = TypedDict(
 @dataclass
 class Team:
     _data: TeamData
+    games_played: int
     wins: int
     losses: int
     tiebreaker: int
@@ -67,15 +68,10 @@ class Team:
     def championships(self) -> int:
         return self._data["championships"]
 
-    def record(self, day: int = 0) -> str:
-        """Return the team record of wins and losses
-
-        If day is present, calculate wins from losses and day, in case of
-        weather.
-        """
-        if day:
-            return f"{day - self.losses}-{self.losses}"
-        return f"{self.wins}-{self.losses}"
+    @property
+    def record(self) -> str:
+        """Return the team record of wins and losses"""
+        return f"{self.games_played - self.losses}-{self.losses}"
 
     @property
     def sort(self) -> Tuple[int, int]:

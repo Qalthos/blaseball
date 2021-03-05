@@ -29,6 +29,7 @@ class Division:
         teams = [
             Team(
                 _data=all_teams[team_id],
+                games_played=standings['gamesPlayed'][team_id],
                 wins=standings['wins'][team_id],
                 losses=standings['losses'][team_id],
                 tiebreaker=tiebreakers.index(team_id),

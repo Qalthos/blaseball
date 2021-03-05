@@ -15,8 +15,6 @@ def get_game_data() -> dict[str, Any]:
 
     sim_data = database.get_simulation_data()
     season_number = sim_data["season"] + 1
-    game_day = sim_data["day"] + 1
-    games_left = 99 - game_day
 
     # Pick out all standings
     season = database.get_season(season_number=season_number)
@@ -45,7 +43,7 @@ def get_game_data() -> dict[str, Any]:
             teams.append(f"\n{badge} {team.name}", style=team.color)
             teams.append(f"{'●' * team.championships}", style="#ffeb57")
             teams.append(f"[{team.tiebreaker}] {team.wins}")
-            if team - subleague.remainder[0] > games_left:
+            if team - subleague.remainder[0] > (99 - subleague.remainder[0].games_played):
                 teams.append(" 🏆")
 
         teams.append("\n")
@@ -55,11 +53,13 @@ def get_game_data() -> dict[str, Any]:
             teams.append(f"\n{team.name}", style=team.color)
             teams.append(f"[{team.tiebreaker}] {team.wins}")
             to_catch = playoff_cutoff - team
-            if to_catch > games_left:
+            if team.games_played == 0:
+                pass
+            elif to_catch > (99 - team.games_played):
                 teams.append(" 🥳🎉")
             else:
                 # Solve for (to_catch / game_day) * x > 99 - x
-                estimated_party = int(99 / ((to_catch / game_day) + 1)) + 1
+                estimated_party = int(99 / ((to_catch / team.games_played) + 1)) + 1
                 if estimated_party < 99:
                     teams.append(f"\n  Party estimate on day {estimated_party}")
 
@@ -68,7 +68,7 @@ def get_game_data() -> dict[str, Any]:
     game_data = {
         "league": league["name"],
         "season": season_number,
-        "day": game_day,
+        "day": sim_data["day"] + 1,
         "predictions": predictions,
     }
     return game_data

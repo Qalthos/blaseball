@@ -30,6 +30,10 @@ class PlayoffTeams(Iterable[Team]):
         at_large = sorted(high.remainder + low.remainder, key=attrgetter("sort"), reverse=True)
         return PlayoffTeams(high=high.winner, low=low.winner, others=at_large[:2])
 
+    @property
+    def cutoff(self):
+        return min(self.others, key=attrgetter("sort"))
+
     def __iter__(self) -> Iterator[Team]:
         winners = [self.high, self.low, *self.others]
         return iter(sorted(winners, key=attrgetter("sort"), reverse=True))
@@ -63,3 +67,7 @@ class Subleague:
         for division in self.divisions:
             remainders.extend(division.remainder)
         return sorted(remainders, key=attrgetter("sort"), reverse=True)[2:]
+
+    @property
+    def cutoff(self):
+        return max(self.remainder, key=attrgetter("sort"))

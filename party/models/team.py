@@ -74,6 +74,14 @@ class Team:
         return f"{self.games_played - self.losses}-{self.losses}"
 
     @property
+    def wins_per_game(self) -> float:
+        return self.wins / self.games_played
+
+    def estimate_party_time(self, needed: int) -> int:
+        """Return the estimated game the team will begin partying"""
+        return int((99 * self.games_played) / (needed + self.games_played)) + 1
+
+    @property
     def sort(self) -> Tuple[int, int]:
         """A 2-tuple suitable for ordering teams by."""
         return (self.wins, -self.tiebreaker)

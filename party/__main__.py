@@ -42,7 +42,7 @@ def get_game_data() -> dict[str, Any]:
             badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
             teams.append(f"\n{badge} {team.name}", style=team.color)
             teams.append(f"{'●' * team.championships}", style="#ffeb57")
-            teams.append(f"[{team.tiebreaker}] {team.wins}")
+            teams.append(f"[{team.tiebreaker}] {team.wins} {team.record}")
             if team - subleague.remainder[0] > (99 - subleague.remainder[0].games_played):
                 teams.append(" 🏆")
 
@@ -51,7 +51,7 @@ def get_game_data() -> dict[str, Any]:
         playoff_cutoff = team
         for team in subleague.remainder:
             teams.append(f"\n{team.name}", style=team.color)
-            teams.append(f"[{team.tiebreaker}] {team.wins}")
+            teams.append(f"[{team.tiebreaker}] {team.wins} {team.record}")
             to_catch = playoff_cutoff - team
             if team.games_played == 0:
                 pass

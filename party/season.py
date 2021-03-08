@@ -2,6 +2,8 @@ from typing import Any
 
 from blaseball_mike import database
 from blaseball_mike import models
+from rich.layout import Layout
+from rich.table import Table
 from rich.text import Text
 
 from party.models.subleague import Subleague
@@ -26,31 +28,55 @@ def get_game_data(sim_data: models.SimulationData) -> dict[str, Any]:
             standings=standings,
             tiebreakers=list(tiebreakers.order),
         )
-        teams = Text("Current playoff teams:")
+        layout = Layout()
+        layout.split(
+            Layout(Text("Current playoff teams:"), size=1),
+            Layout(name="playoffs", size=5),
+            Layout(name="remainder"),
+        )
+        teams = Table.grid(expand=True)
+        teams.add_column("Flag", width=1)
+        teams.add_column("Name")
+        teams.add_column("Championships", style="#ffeb57")
+        teams.add_column("Wins", max_width=3)
+        teams.add_column("Record", max_width=5)
         playoff = subleague.playoff_teams
         for team in playoff:
             badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
-            teams.append(f"\n{badge} {team.name}", style=team.color)
-            teams.append(f"{'●' * team.championships}", style="#ffeb57")
-            teams.append(f"[{team.tiebreaker}] {team.wins} {team.record}")
-            if team - subleague.cutoff > (99 - subleague.cutoff.games_played):
-                teams.append(" 🏆")
+            star = "*" if team.games_played < sim_data.day else ""
+            trophy = " 🏆" if team - subleague.cutoff > (99 - subleague.cutoff.games_played) else ""
+            teams.add_row(
+                badge,
+                Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
+                Text("●" * team.championships),
+                f"{team.wins}{star}{trophy}",
+                team.record,
+            )
+        layout["playoffs"].update(teams)
 
-        teams.append("\n")
-
+        teams = Table.grid(expand=True)
+        teams.add_column("Partying", width=1)
+        teams.add_column("Name")
+        teams.add_column("Distance", max_width=5)
+        teams.add_column("Wins", max_width=3)
+        teams.add_column("Record", max_width=5)
+        teams.add_column("Estimate", max_width=2)
         for team in subleague.remainder:
-            teams.append(f"\n{team.name}", style=team.color)
-            teams.append(f"[{team.tiebreaker}] {team.wins} {team.record}")
             needed = playoff.cutoff - team
             estimate = team.estimate_party_time(needed)
-            if needed > (99 - team.games_played) or estimate < sim_data.day:
-                teams.append(" 🥳🎉")
-            else:
-                teams.append(f" (-{needed})")
-                if estimate < 99:
-                    teams.append(f"\n  Party estimate on day {estimate}")
+            party = "🥳" if needed > (99 - team.games_played) or estimate < sim_data.day else ""
+            star = "*" if team.games_played < sim_data.day else ""
+            teams.add_row(
+                party,
+                Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
+                f" (-{needed})",
+                f"{team.wins}{star}",
+                team.record,
+                str(estimate),
+            )
+        layout["remainder"].update(teams)
 
-        predictions[subleague.name] = teams
+        predictions[subleague.name] = layout
 
     game_data = {
         "league": sim_data.league.name,

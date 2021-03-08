@@ -21,6 +21,7 @@ def main() -> None:
             layout[subleague].update(Panel(
                 data,
                 title=subleague,
+                padding=0,
             ))
     else:
         game_data = postseason.get_playoffs(sim_data)

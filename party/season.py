@@ -38,33 +38,33 @@ def get_game_data(sim_data: models.SimulationData) -> dict[str, Any]:
         teams.add_column("Estimate", width=2)
         playoff = subleague.playoff_teams
         for team in playoff:
+            needed = team - subleague.cutoff
+            estimate = team.estimate_party_time(needed)
             badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
             star = "*" if team.games_played < (sim_data.day + 1) else " "
             championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
-            trophy = " 🏆" if team - subleague.cutoff > (99 - subleague.cutoff.games_played) else ""
+            trophy = "🏆" if needed > (99 - subleague.cutoff.games_played) or estimate < sim_data.day else ""
             teams.add_row(
                 badge,
                 Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
                 championships,
                 f"{team.wins}{star}",
                 team.record,
-                # str(team.estimate_party_time(playoff.cutoff - team)),
-                trophy,
+                trophy or str(estimate),
             )
         for team in subleague.remainder:
             needed = playoff.cutoff - team
             estimate = team.estimate_party_time(needed)
-            party = "🥳" if needed > (99 - team.games_played) or estimate < sim_data.day else ""
             star = "*" if team.games_played < (sim_data.day + 1) else " "
             championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
+            party = "🥳" if needed > (99 - team.games_played) or estimate < sim_data.day else ""
             teams.add_row(
-                party,
+                "",
                 Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
                 championships,
                 f"{team.wins}{star}",
                 team.record,
-                # f"-{needed}",
-                str(estimate),
+                party or str(estimate),
             )
 
         predictions[subleague.name] = teams

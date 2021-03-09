@@ -1,12 +1,20 @@
-from typing import Any
+from typing import TypedDict
 
-from blaseball_mike import database
-from blaseball_mike import models
-from rich.layout import Layout
+from blaseball_mike import database, models
 from rich.table import Table
 from rich.text import Text
 
 from party.models.subleague import Subleague
+
+Prediction = TypedDict(
+    "Prediction",
+    {
+        "league": str,
+        "season": int,
+        "day": int,
+        "predictions": dict[str, Table],
+    }
+)
 
 
 def get_standings(season: int) -> models.Standings:
@@ -27,7 +35,7 @@ def get_subleagues(league: models.League) -> list[Subleague]:
     return subleagues
 
 
-def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> dict[str, Any]:
+def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
     standings = get_standings(sim_data.season)
@@ -76,7 +84,7 @@ def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) 
 
         predictions[subleague.name] = teams
 
-    game_data = {
+    game_data: Prediction = {
         "league": sim_data.league.name,
         "season": sim_data.season,
         "day": sim_data.day + 1,

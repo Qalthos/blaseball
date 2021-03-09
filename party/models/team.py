@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import List, TypedDict, Tuple
+from typing import List, Tuple, TypedDict
 
 from blaseball_mike import models
-
 
 TeamData = TypedDict(
     "TeamData",
@@ -59,10 +58,6 @@ class Team:
         return self._data["nickname"]
 
     @property
-    def emoji(self) -> str:
-        return self._data["emoji"]
-
-    @property
     def color(self) -> str:
         return self._data["mainColor"]
 
@@ -74,10 +69,6 @@ class Team:
     def record(self) -> str:
         """Return the team record of wins and losses"""
         return f"{self.games_played - self.losses}-{self.losses}"
-
-    @property
-    def wins_per_game(self) -> float:
-        return self.wins / self.games_played
 
     def estimate_party_time(self, needed: int) -> int:
         """Return the estimated game the team will begin partying"""

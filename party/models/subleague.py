@@ -1,14 +1,11 @@
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import List, TypedDict, Iterable, Iterator
+from typing import Iterable, Iterator, List, TypedDict
 
-from blaseball_mike import database
-from blaseball_mike import models
+from blaseball_mike import database, models
 
-from party.models import JSON
 from party.models.division import Division
 from party.models.team import Team
-
 
 SubleagueData = TypedDict(
     "SubleagueData",

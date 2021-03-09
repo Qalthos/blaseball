@@ -2,12 +2,9 @@ from dataclasses import dataclass
 from operator import attrgetter
 from typing import List, TypedDict
 
-from blaseball_mike import database
-from blaseball_mike import models
+from blaseball_mike import database, models
 
-from party.models import JSON
 from party.models.team import Team
-
 
 DivisionData = TypedDict(
     "DivisionData",

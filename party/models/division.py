@@ -3,6 +3,7 @@ from operator import attrgetter
 from typing import List, TypedDict
 
 from blaseball_mike import database
+from blaseball_mike import models
 
 from party.models import JSON
 from party.models.team import Team
@@ -24,14 +25,11 @@ class Division:
     teams: List[Team]
 
     @classmethod
-    def load(cls, id_: str, all_teams: List[Team], standings: JSON, tiebreakers: List[str]) -> "Division":
+    def load(cls, id_: str, all_teams: List[Team], tiebreakers: List[str]) -> "Division":
         data = database.get_division(id_=id_)
         teams = [
             Team(
                 _data=all_teams[team_id],
-                games_played=standings['gamesPlayed'][team_id],
-                wins=standings['wins'][team_id],
-                losses=standings['losses'][team_id],
                 tiebreaker=tiebreakers.index(team_id),
             )
             for team_id in data["teams"]
@@ -49,3 +47,7 @@ class Division:
     @property
     def remainder(self) -> List[Team]:
         return self.teams[1:]
+
+    def update(self, standings: models.Standings) -> None:
+        for team in self.teams:
+            team.update(standings)

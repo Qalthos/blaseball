@@ -10,9 +10,8 @@ from party import season, postseason
 
 
 def main() -> None:
-    sim_data = models.SimulationData.load()
     if sim_data.day < 100:
-        game_data = season.get_game_data(sim_data)
+        game_data = season.get_game_data(sim_data, subleagues)
         layout["header"].update(Panel(Text(
             f"{game_data['league']} Season {game_data['season']} Day {game_data['day']}",
             justify="center",
@@ -32,9 +31,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    sim_data = models.SimulationData.load()
+    subleagues = season.get_subleagues(sim_data.league)
     main()
     with Live(layout) as live:
         while True:
+            sim_data = models.SimulationData.load()
             main()
 
             try:

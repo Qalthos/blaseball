@@ -9,25 +9,32 @@ from rich.text import Text
 from party.models.subleague import Subleague
 
 
-def get_game_data(sim_data: models.SimulationData) -> dict[str, Any]:
-    """Get Blaseball data and return party time predictions"""
+def get_standings(season: int) -> models.Standings:
+    return models.Season.load(season_number=season).standings
 
-    # Pick out all standings
-    season = database.get_season(season_number=sim_data.season)
-    standings = database.get_standings(id_=season["standings"])
 
-    # Get teams
+def get_subleagues(league: models.League) -> list[Subleague]:
     all_teams = database.get_all_teams()
-    tiebreakers = next(iter(sim_data.league.tiebreakers.values()))
+    tiebreakers = next(iter(league.tiebreakers.values()))
 
-    predictions: dict[str, list[str]] = {}
-    for subleague_id in sim_data.league.subleagues:
-        subleague = Subleague.load(
+    subleagues = []
+    for subleague_id in league.subleagues:
+        subleagues.append(Subleague.load(
             id_=subleague_id,
             all_teams=all_teams,
-            standings=standings,
             tiebreakers=list(tiebreakers.order),
-        )
+        ))
+    return subleagues
+
+
+def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> dict[str, Any]:
+    """Get Blaseball data and return party time predictions"""
+
+    standings = get_standings(sim_data.season)
+
+    predictions: dict[str, list[str]] = {}
+    for subleague in subleagues:
+        subleague.update(standings)
         teams = Table.grid(expand=True, padding=(0, 1))
         teams.add_column("Flag", width=1)
         teams.add_column("Name")

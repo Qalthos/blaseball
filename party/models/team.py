@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, TypedDict, Tuple
 
+from blaseball_mike import models
+
 
 TeamData = TypedDict(
     "TeamData",
@@ -47,10 +49,10 @@ TeamData = TypedDict(
 @dataclass
 class Team:
     _data: TeamData
-    games_played: int
-    wins: int
-    losses: int
     tiebreaker: int
+    games_played: int = 0
+    wins: int = 0
+    losses: int = 0
 
     @property
     def name(self) -> str:
@@ -80,6 +82,11 @@ class Team:
     def estimate_party_time(self, needed: int) -> int:
         """Return the estimated game the team will begin partying"""
         return int((99 * self.games_played) / (needed + self.games_played)) + 1
+
+    def update(self, standings: models.Standings) -> None:
+        self.games_played = standings.games_played[self._data["id"]]
+        self.wins = standings.wins[self._data["id"]]
+        self.losses = standings.losses[self._data["id"]]
 
     @property
     def sort(self) -> Tuple[int, int]:

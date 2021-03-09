@@ -3,6 +3,7 @@ from operator import attrgetter
 from typing import List, TypedDict, Iterable, Iterator
 
 from blaseball_mike import database
+from blaseball_mike import models
 
 from party.models import JSON
 from party.models.division import Division
@@ -26,7 +27,7 @@ class PlayoffTeams(Iterable[Team]):
     others: list[Team]
 
     @classmethod
-    def load(self, high: Division, low: Division) -> "PlayoffTeams":
+    def load(cls, high: Division, low: Division) -> "PlayoffTeams":
         at_large = sorted(high.remainder + low.remainder, key=attrgetter("sort"), reverse=True)
         return PlayoffTeams(high=high.winner, low=low.winner, others=at_large[:2])
 
@@ -45,10 +46,10 @@ class Subleague:
     divisions: List[Division]
 
     @classmethod
-    def load(cls, id_: str, all_teams: List[Team], standings: JSON, tiebreakers: List[str]) -> "Subleague":
+    def load(cls, id_: str, all_teams: List[Team], tiebreakers: List[str]) -> "Subleague":
         data = database.get_subleague(id_=id_)
         divisions = [
-            Division.load(division_id, all_teams, standings, tiebreakers)
+            Division.load(division_id, all_teams, tiebreakers)
             for division_id in data["divisions"]
         ]
         return cls(_data=data, divisions=divisions)
@@ -71,3 +72,7 @@ class Subleague:
     @property
     def cutoff(self):
         return max(self.remainder, key=attrgetter("sort"))
+
+    def update(self, standings: models.Standings) -> None:
+        for division in self.divisions:
+            division.update(standings)

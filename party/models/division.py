@@ -51,3 +51,5 @@ class Division:
     def update(self, standings: models.Standings) -> None:
         for team in self.teams:
             team.update(standings)
+
+        self.teams.sort(key=attrgetter("sort"), reverse=True)

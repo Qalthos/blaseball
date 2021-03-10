@@ -52,6 +52,7 @@ class Team:
     games_played: int = 0
     wins: int = 0
     losses: int = 0
+    runs: int = 0
 
     @property
     def name(self) -> str:
@@ -78,6 +79,7 @@ class Team:
         self.games_played = standings.games_played[self._data["id"]]
         self.wins = standings.wins[self._data["id"]]
         self.losses = standings.losses[self._data["id"]]
+        self.runs = standings.runs[self._data["id"]]
 
     @property
     def sort(self) -> Tuple[int, int]:

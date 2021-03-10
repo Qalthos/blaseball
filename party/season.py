@@ -67,6 +67,7 @@ def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) 
                 team.record,
                 trophy or str(estimate),
             )
+        teams.add_row()
         for team in subleague.remainder:
             needed = playoff.cutoff - team
             estimate = team.estimate_party_time(needed)

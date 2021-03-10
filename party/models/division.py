@@ -27,7 +27,7 @@ class Division:
         teams = [
             Team(
                 _data=all_teams[team_id],
-                tiebreaker=tiebreakers.index(team_id),
+                tiebreaker=tiebreakers.index(team_id) + 1,
             )
             for team_id in data["teams"]
         ]

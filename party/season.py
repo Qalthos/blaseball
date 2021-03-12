@@ -13,7 +13,7 @@ Prediction = TypedDict(
         "season": int,
         "day": int,
         "predictions": dict[str, Table],
-    }
+    },
 )
 
 

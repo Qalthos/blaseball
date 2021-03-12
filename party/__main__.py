@@ -5,12 +5,12 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
+from party import postseason, season
 from party.display import layout
-from party import season, postseason
 
 
 def main() -> None:
-    if sim_data.day < 100:
+    if sim_data.day < 99:
         game_data = season.get_game_data(sim_data, subleagues)
         layout["header"].update(Panel(Text(
             f"{game_data['league']} Season {game_data['season']} Day {game_data['day']}",
@@ -23,11 +23,17 @@ def main() -> None:
                 padding=0,
             ))
     else:
-        game_data = postseason.get_playoffs(sim_data)
+        postseason_data = postseason.get_playoffs(sim_data)
         layout["header"].update(Panel(Text(
-            f"{game_data['name']} Day {game_data['day']}",
+            f"{postseason_data['league']} {postseason_data['name']} Day {postseason_data['day']}",
             justify="center",
         )))
+        for subleague, data in postseason_data["games"].items():
+            layout[subleague].update(Panel(
+                data,
+                title=subleague,
+                padding=0,
+            ))
 
 
 if __name__ == "__main__":
@@ -40,6 +46,6 @@ if __name__ == "__main__":
             main()
 
             try:
-                time.sleep(600)
+                time.sleep(300)
             except KeyboardInterrupt:
                 break

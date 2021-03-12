@@ -25,7 +25,7 @@ def main() -> None:
     else:
         postseason_data = postseason.get_playoffs(sim_data)
         layout["header"].update(Panel(Text(
-            f"{postseason_data['league']} {postseason_data['name']} Day {postseason_data['day']}",
+            f"{postseason_data['name']} {postseason_data['round']}",
             justify="center",
         )))
         for subleague, data in postseason_data["games"].items():

@@ -9,7 +9,7 @@ def main() -> None:
         subleagues = season.get_subleagues(sim_data.league)
         game_data = season.get_game_data(sim_data, subleagues)
         display.update_standings(
-            f"{sim_data.league.name} Season {sim_data.season + 1} Day {sim_data.day + 1}",
+            f"{sim_data.league.name} Season {sim_data.season} Day {sim_data.day + 1}",
             game_data,
         )
     else:

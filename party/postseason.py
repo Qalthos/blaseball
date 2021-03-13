@@ -1,18 +1,23 @@
-from collections import defaultdict, namedtuple
-from typing import TypedDict
+from collections import defaultdict
+from typing import NamedTuple, TypedDict
 
 from blaseball_mike import models
 
-Row = namedtuple("Row", ["seed", "name", "color", "wins"])
+
+class Row(NamedTuple):
+    seed: str
+    name: str
+    color: str
+    wins: str
+
+
 Games = dict[str, dict[str, list[Row]]]
-PlayoffStandings = TypedDict(
-    "PlayoffStandings",
-    {
-        "name": str,
-        "round": str,
-        "games": Games,
-    },
-)
+
+
+class PlayoffStandings(TypedDict):
+    name: str
+    round: str
+    games: Games
 
 
 def subleague_for_team(subleagues: list[models.Subleague], team: models.Team) -> str:

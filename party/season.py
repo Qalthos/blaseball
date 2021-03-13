@@ -1,23 +1,23 @@
-from collections import defaultdict, namedtuple
+from collections import defaultdict
+from typing import NamedTuple
 
 from blaseball_mike import database, models
 
 from party.models.subleague import Subleague
 from party.models.team import Team
 
-Row = namedtuple(
-    "Row",
-    [
-        "badge",
-        "name",
-        "color",
-        "tiebreaker",
-        "championships",
-        "wins",
-        "record",
-        "estimate"
-    ]
-)
+
+class Row(NamedTuple):
+    badge: str
+    name: str
+    color: str
+    tiebreaker: str
+    championships: str
+    wins: str
+    record: str
+    estimate: str
+
+
 Prediction = dict[str, list[Row]]
 
 
@@ -64,7 +64,6 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
         team.record,
         trophy or str(estimate),
     )
-    pass
 
 
 def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> Prediction:

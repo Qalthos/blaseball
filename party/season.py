@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import NamedTuple
+from typing import Dict, List, NamedTuple
 
 from blaseball_mike import models
 
@@ -18,14 +18,14 @@ class Row(NamedTuple):
     estimate: str
 
 
-Prediction = dict[str, list[Row]]
+Prediction = Dict[str, List[Row]]
 
 
 def get_standings(season: int) -> models.Standings:
     return models.Season.load(season_number=season).standings
 
 
-def get_subleagues(league: models.League) -> list[Subleague]:
+def get_subleagues(league: models.League) -> List[Subleague]:
     tiebreakers = next(iter(league.tiebreakers.values()))
 
     subleagues = []
@@ -64,7 +64,7 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
     )
 
 
-def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> Prediction:
+def get_game_data(sim_data: models.SimulationData, subleagues: List[Subleague]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
     standings = get_standings(sim_data.season)

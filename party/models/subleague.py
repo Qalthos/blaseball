@@ -12,7 +12,7 @@ from party.models.team import Team
 class PlayoffTeams(Iterable[Team]):
     high: Team
     low: Team
-    others: list[Team]
+    others: List[Team]
 
     @classmethod
     def load(cls, high: Division, low: Division) -> "PlayoffTeams":

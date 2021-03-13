@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import NamedTuple, TypedDict
+from typing import Dict, List, NamedTuple, TypedDict
 
 from blaseball_mike import models
 
@@ -11,7 +11,7 @@ class Row(NamedTuple):
     wins: str
 
 
-Games = dict[str, dict[str, list[Row]]]
+Games = Dict[str, Dict[str, List[Row]]]
 
 
 class PlayoffStandings(TypedDict):
@@ -20,7 +20,7 @@ class PlayoffStandings(TypedDict):
     games: Games
 
 
-def subleague_for_team(subleagues: list[models.Subleague], team: models.Team) -> str:
+def subleague_for_team(subleagues: List[models.Subleague], team: models.Team) -> str:
     for subleague in subleagues:
         if team in subleague.teams.values():
             return subleague.name

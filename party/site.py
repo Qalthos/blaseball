@@ -5,7 +5,7 @@ from flask_caching import Cache
 from party import season
 
 app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
 
 @app.route("/")

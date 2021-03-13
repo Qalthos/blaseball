@@ -5,6 +5,7 @@ from rich.table import Table
 from rich.text import Text
 
 from party.models.subleague import Subleague
+from party.models.team import Team
 
 Prediction = TypedDict(
     "Prediction",
@@ -35,6 +36,32 @@ def get_subleagues(league: models.League) -> list[Subleague]:
     return subleagues
 
 
+def format_row(subleague: Subleague, team: Team, day: int) -> tuple[str, Text, str, str, str, str]:
+    playoff = subleague.playoff_teams
+    if team in playoff:
+        needed = team - subleague.cutoff
+        estimate = team.estimate_party_time(needed)
+        badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
+        trophy = "🏆" if needed > (99 - subleague.cutoff.games_played) or estimate < day else ""
+    else:
+        needed = playoff.cutoff - team
+        estimate = team.estimate_party_time(needed)
+        badge = ""
+        trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
+
+    star = "*" if team.games_played < (day + 1) < 100 else " "
+    championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
+    return (
+        badge,
+        Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
+        championships,
+        f"{star}{team.wins}",
+        team.record,
+        trophy or str(estimate),
+    )
+    pass
+
+
 def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
@@ -53,35 +80,10 @@ def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) 
         teams.add_column("Estimate", width=2)
         playoff = subleague.playoff_teams
         for team in playoff:
-            needed = team - subleague.cutoff
-            estimate = team.estimate_party_time(needed)
-            badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
-            star = "*" if team.games_played < (sim_data.day + 1) else " "
-            championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
-            trophy = "🏆" if needed > (99 - subleague.cutoff.games_played) or estimate < sim_data.day else ""
-            teams.add_row(
-                badge,
-                Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
-                championships,
-                f"{team.wins}{star}",
-                team.record,
-                trophy or str(estimate),
-            )
+            teams.add_row(*format_row(subleague, team, sim_data.day))
         teams.add_row()
         for team in subleague.remainder:
-            needed = playoff.cutoff - team
-            estimate = team.estimate_party_time(needed)
-            star = "*" if team.games_played < (sim_data.day + 1) else " "
-            championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
-            party = "🥳" if needed > (99 - team.games_played) or estimate < sim_data.day else ""
-            teams.add_row(
-                "",
-                Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
-                championships,
-                f"{team.wins}{star}",
-                team.record,
-                party or str(estimate),
-            )
+            teams.add_row(*format_row(subleague, team, sim_data.day))
 
         predictions[subleague.name] = teams
 

@@ -69,7 +69,7 @@ class Team:
     @property
     def record(self) -> str:
         """Return the team record of wins and losses"""
-        return f"{self.games_played - self.losses}-{self.losses}"
+        return f"{self.games_played - self.losses:>2}-{self.losses:>2}"
 
     def estimate_party_time(self, needed: int) -> int:
         """Return the estimated game the team will begin partying"""

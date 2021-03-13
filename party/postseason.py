@@ -67,7 +67,7 @@ def get_playoffs(sim_data: models.SimulationData) -> Prediction:
     for subleague, table in tables.items():
         matches = sorted(teams[subleague].values())
         for match in matches:
-            for team in match:
+            for team in sorted(match):
                 table.add_row(*team)
             table.add_row()
 

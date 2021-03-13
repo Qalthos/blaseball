@@ -70,16 +70,16 @@ def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) 
     predictions: dict[str, list[str]] = {}
     for subleague in subleagues:
         subleague.update(standings)
-        teams = Table.grid(expand=True, padding=(0, 1))
+
+        teams = Table.grid(expand=True)
         teams.add_column("Flag", width=1)
         teams.add_column("Name")
         teams.add_column("Championships", style="#ffeb57")
-        teams.add_column("Wins", max_width=3, justify="right")
-        teams.add_column("Record", max_width=5)
-        # teams.add_column("Distance", max_width=5)
-        teams.add_column("Estimate", width=2)
-        playoff = subleague.playoff_teams
-        for team in playoff:
+        teams.add_column("Wins", width=4, justify="right")
+        teams.add_column("Record", width=6, justify="right")
+        teams.add_column("Estimate", width=3, justify="right")
+
+        for team in subleague.playoff_teams:
             teams.add_row(*format_row(subleague, team, sim_data.day))
         teams.add_row()
         for team in subleague.remainder:

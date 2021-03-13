@@ -1,0 +1,50 @@
+<!doctype html>
+<title>{{ sim.league.name }} Season {{ sim.season }} Standings</title>
+
+<p>
+  In the first column, "L" or "H" indicates that this team is the top team of
+	the Low or High division of their sub-league, respectively.<br />
+	"*" means that this team is one of the top two highest winning teams not top
+	of their division.
+</p>
+<p>
+  The third column is the number of championships this team has won, either
+	represented by a circle per win, or "●*&lt;number of championships&gt;" if
+	that number is greater than three.
+</p>
+<p>
+  In the last column, a "🏆" means that this team has clinched a playoff spot
+	for their subleague, and will see a postseason birth unless Black Hole or
+	Sun 2 weather causes them to drop out of this position.<br />
+	Likewise, a "🥳" indicates that this team has been mathematically eliminated
+	from the playoffs and entered Party Time.<br />
+	A number in this column indicates the day after which this site estimates
+	the team will enter one of the above states, depending on whether they are
+	presently in the running for the postseason or not.
+</p>
+
+{% for league, teams in standings.items() %}
+<div style="width: 50%; float: left;">
+	<p>{{ league }}</p>
+	<table>
+		<tr>
+			<th></th>
+			<th>Team</th>
+			<th></th>
+			<th>Wins</th>
+			<th>Record</th>
+			<th>Estimate</th>
+		</tr>
+		{% for team in teams %}
+		<tr>
+			<td>{{ team.badge }}</td>
+			<td>{{ team.name }}{{ team.tiebreaker }}</td>
+			<td>{{ team.championships }}</td>
+			<td>{{ team.wins }}</td>
+			<td>{{ team.record }}</td>
+			<td>{{ team.estimate }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+</div>
+{% endfor %}

@@ -1,53 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Tuple, TypedDict
+from typing import Tuple
 
 from blaseball_mike import models
-
-TeamData = TypedDict(
-    "TeamData",
-    {
-        "id": str,
-
-        # Players
-        "lineup": List[str],
-        "rotation": List[str],
-        "bullpen": List[str],
-        "bench": List[str],
-
-        # Team metadata
-        "fullName": str,
-        "location": str,
-        "mainColor": str,
-        "nickname": str,
-        "secondaryColor": str,
-        "shorthand": str,
-        "emoji": str,
-        "slogan": str,
-
-        # Shame stats
-        "shameRuns": int,
-        "totalShames": int,
-        "totalShamings": int,
-        "seasonShames": int,
-        "seasonShamings": int,
-
-        "championships": int,
-        "rotationSlot": int,
-
-        # Modifiers
-        "weekAttr": List[str],
-        "gameAttr": List[str],
-        "seasAttr": List[str],
-        "permAttr": List[str],
-
-        "teamSpirit": int,
-    },
-)
 
 
 @dataclass
 class Team:
-    _data: TeamData
+    _data: models.Team
     tiebreaker: int
     games_played: int = 0
     wins: int = 0
@@ -55,16 +14,20 @@ class Team:
     runs: int = 0
 
     @property
+    def id(self) -> str:
+        return self._data.id
+
+    @property
     def name(self) -> str:
-        return self._data["nickname"]
+        return self._data.nickname
 
     @property
     def color(self) -> str:
-        return self._data["mainColor"]
+        return self._data.main_color
 
     @property
     def championships(self) -> int:
-        return self._data["championships"]
+        return self._data.championships
 
     @property
     def record(self) -> str:
@@ -76,10 +39,10 @@ class Team:
         return int((99 * self.games_played) / (needed + self.games_played)) + 1
 
     def update(self, standings: models.Standings) -> None:
-        self.games_played = standings.games_played[self._data["id"]]
-        self.wins = standings.wins[self._data["id"]]
-        self.losses = standings.losses[self._data["id"]]
-        self.runs = standings.runs[self._data["id"]]
+        self.games_played = standings.games_played[self.id]
+        self.wins = standings.wins[self.id]
+        self.losses = standings.losses[self.id]
+        self.runs = standings.runs[self.id]
 
     @property
     def sort(self) -> Tuple[int, int]:

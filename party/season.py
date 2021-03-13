@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import NamedTuple
 
-from blaseball_mike import database, models
+from blaseball_mike import models
 
 from party.models.subleague import Subleague
 from party.models.team import Team
@@ -26,14 +26,12 @@ def get_standings(season: int) -> models.Standings:
 
 
 def get_subleagues(league: models.League) -> list[Subleague]:
-    all_teams = database.get_all_teams()
     tiebreakers = next(iter(league.tiebreakers.values()))
 
     subleagues = []
     for subleague_id in league.subleagues:
         subleagues.append(Subleague.load(
             id_=subleague_id,
-            all_teams=all_teams,
             tiebreakers=list(tiebreakers.order),
         ))
     return subleagues

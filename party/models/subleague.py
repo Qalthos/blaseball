@@ -1,20 +1,11 @@
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import Iterable, Iterator, List, TypedDict
+from typing import Iterable, Iterator, List
 
-from blaseball_mike import database, models
+from blaseball_mike import models
 
 from party.models.division import Division
 from party.models.team import Team
-
-SubleagueData = TypedDict(
-    "SubleagueData",
-    {
-        "id": str,
-        "name": str,
-        "divisions": List[str],
-    },
-)
 
 
 @dataclass
@@ -39,21 +30,17 @@ class PlayoffTeams(Iterable[Team]):
 
 @dataclass
 class Subleague:
-    _data: SubleagueData
+    name: str
     divisions: List[Division]
 
     @classmethod
-    def load(cls, id_: str, all_teams: List[Team], tiebreakers: List[str]) -> "Subleague":
-        data = database.get_subleague(id_=id_)
+    def load(cls, id_: str, tiebreakers: List[str]) -> "Subleague":
+        subleague = models.Subleague.load(id_=id_)
         divisions = [
-            Division.load(division_id, all_teams, tiebreakers)
-            for division_id in data["divisions"]
+            Division.load(division, tiebreakers)
+            for division in subleague.divisions.values()
         ]
-        return cls(_data=data, divisions=divisions)
-
-    @property
-    def name(self) -> str:
-        return self._data["name"]
+        return cls(name=subleague.name, divisions=divisions)
 
     @property
     def playoff_teams(self) -> PlayoffTeams:

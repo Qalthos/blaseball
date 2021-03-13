@@ -1,4 +1,4 @@
-import copy
+from collections import defaultdict
 from typing import TypedDict
 
 from blaseball_mike import models
@@ -35,21 +35,20 @@ def get_playoffs(sim_data: models.SimulationData) -> Prediction:
         games.add_column("Wins", width=1)
         tables[subleague.name] = games
 
-    teams: dict[str, list]
+    teams: dict[str, dict[str, list]]
     current_round: models.PlayoffRound
     for playoff_round in playoff.rounds:
         if not playoff_round.games:
             break
         current_round = playoff_round
-        teams = {subleague.name: [] for subleague in subleagues}
+        teams = {subleague.name: defaultdict(list) for subleague in subleagues}
         for matchup in current_round.matchups:
-            match: list[tuple[str, Text, str]] = []
             if matchup.away_team:
                 try:
                     subleague = subleague_for_team(subleagues, matchup.away_team)
                 except KeyError:
                     continue
-                match.append((
+                teams[subleague][matchup.id].append((
                     str(matchup.away_seed + 1),
                     Text(matchup.away_team.nickname, style=matchup.away_team.main_color),
                     str(matchup.away_wins),
@@ -59,16 +58,14 @@ def get_playoffs(sim_data: models.SimulationData) -> Prediction:
                     subleague = subleague_for_team(subleagues, matchup.home_team)
                 except KeyError:
                     continue
-                match.append((
+                teams[subleague][matchup.id].append((
                     str(matchup.home_seed + 1),
                     Text(matchup.home_team.nickname, style=matchup.home_team.main_color),
                     str(matchup.home_wins)
                 ))
-            if match:
-                teams[subleague].append(sorted(match))
 
     for subleague, table in tables.items():
-        matches = sorted(teams[subleague])
+        matches = sorted(teams[subleague].values())
         for match in matches:
             for team in match:
                 table.add_row(*team)

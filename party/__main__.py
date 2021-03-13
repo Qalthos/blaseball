@@ -1,51 +1,24 @@
-import time
-
 from blaseball_mike import models
-from rich.live import Live
-from rich.panel import Panel
-from rich.text import Text
 
-from party import postseason, season
-from party.display import layout
+from party import display, postseason, season
 
 
 def main() -> None:
+    sim_data = models.SimulationData.load()
     if sim_data.day < 99:
+        subleagues = season.get_subleagues(sim_data.league)
         game_data = season.get_game_data(sim_data, subleagues)
-        layout["header"].update(Panel(Text(
-            f"{game_data['league']} Season {game_data['season']} Day {game_data['day']}",
-            justify="center",
-        )))
-        for subleague, data in game_data["predictions"].items():
-            layout[subleague].update(Panel(
-                data,
-                title=subleague,
-                padding=0,
-            ))
+        display.update_standings(
+            f"{sim_data.league.name} Season {sim_data.season + 1} Day {sim_data.day + 1}",
+            game_data,
+        )
     else:
         postseason_data = postseason.get_playoffs(sim_data)
-        layout["header"].update(Panel(Text(
+        display.update_postseason(
             f"{postseason_data['name']} {postseason_data['round']}",
-            justify="center",
-        )))
-        for subleague, data in postseason_data["games"].items():
-            layout[subleague].update(Panel(
-                data,
-                title=subleague,
-                padding=0,
-            ))
+            postseason_data["games"],
+        )
 
 
 if __name__ == "__main__":
-    sim_data = models.SimulationData.load()
-    subleagues = season.get_subleagues(sim_data.league)
-    main()
-    with Live(layout) as live:
-        while True:
-            sim_data = models.SimulationData.load()
-            main()
-
-            try:
-                time.sleep(300)
-            except KeyboardInterrupt:
-                break
+    display.display_loop(main)

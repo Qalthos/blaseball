@@ -1,21 +1,24 @@
-from typing import TypedDict
+from collections import defaultdict, namedtuple
 
 from blaseball_mike import database, models
-from rich.table import Table
-from rich.text import Text
 
 from party.models.subleague import Subleague
 from party.models.team import Team
 
-Prediction = TypedDict(
-    "Prediction",
-    {
-        "league": str,
-        "season": int,
-        "day": int,
-        "predictions": dict[str, Table],
-    },
+Row = namedtuple(
+    "Row",
+    [
+        "badge",
+        "name",
+        "color",
+        "tiebreaker",
+        "championships",
+        "wins",
+        "record",
+        "estimate"
+    ]
 )
+Prediction = dict[str, list[Row]]
 
 
 def get_standings(season: int) -> models.Standings:
@@ -36,7 +39,7 @@ def get_subleagues(league: models.League) -> list[Subleague]:
     return subleagues
 
 
-def format_row(subleague: Subleague, team: Team, day: int) -> tuple[str, Text, str, str, str, str]:
+def format_row(subleague: Subleague, team: Team, day: int) -> Row:
     playoff = subleague.playoff_teams
     if team in playoff:
         needed = team - subleague.cutoff
@@ -51,9 +54,11 @@ def format_row(subleague: Subleague, team: Team, day: int) -> tuple[str, Text, s
 
     star = "*" if team.games_played < (day + 1) < 100 else " "
     championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
-    return (
+    return Row(
         badge,
-        Text.assemble((team.name, team.color), f"[{team.tiebreaker}]"),
+        team.name,
+        team.color,
+        f"[{team.tiebreaker}]",
         championships,
         f"{star}{team.wins}",
         team.record,
@@ -67,30 +72,14 @@ def get_game_data(sim_data: models.SimulationData, subleagues: list[Subleague]) 
 
     standings = get_standings(sim_data.season)
 
-    predictions: dict[str, list[str]] = {}
+    predictions: Prediction = defaultdict(list)
     for subleague in subleagues:
         subleague.update(standings)
 
-        teams = Table.grid(expand=True)
-        teams.add_column("Flag", width=1)
-        teams.add_column("Name")
-        teams.add_column("Championships", style="#ffeb57")
-        teams.add_column("Wins", width=4, justify="right")
-        teams.add_column("Record", width=6, justify="right")
-        teams.add_column("Estimate", width=3, justify="right")
-
         for team in subleague.playoff_teams:
-            teams.add_row(*format_row(subleague, team, sim_data.day))
-        teams.add_row()
+            predictions[subleague.name].append(format_row(subleague, team, sim_data.day))
+        predictions[subleague.name].append(Row("", "", "", "", "", "", "", ""))
         for team in subleague.remainder:
-            teams.add_row(*format_row(subleague, team, sim_data.day))
+            predictions[subleague.name].append(format_row(subleague, team, sim_data.day))
 
-        predictions[subleague.name] = teams
-
-    game_data: Prediction = {
-        "league": sim_data.league.name,
-        "season": sim_data.season,
-        "day": sim_data.day + 1,
-        "predictions": predictions,
-    }
-    return game_data
+    return predictions

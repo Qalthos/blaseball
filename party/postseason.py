@@ -1,17 +1,16 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from typing import TypedDict
 
 from blaseball_mike import models
-from rich.table import Table
-from rich.text import Text
 
-Prediction = TypedDict(
-    "Prediction",
+Row = namedtuple("Row", ["seed", "name", "color", "wins"])
+Games = dict[str, dict[str, list[Row]]]
+PlayoffStandings = TypedDict(
+    "PlayoffStandings",
     {
-        "league": str,
         "name": str,
         "round": str,
-        "games": dict[str, Table],
+        "games": Games,
     },
 )
 
@@ -23,58 +22,45 @@ def subleague_for_team(subleagues: list[models.Subleague], team: models.Team) ->
     raise KeyError("Can't find subleague for team")
 
 
-def get_playoffs(sim_data: models.SimulationData) -> Prediction:
+def get_playoffs(sim_data: models.SimulationData) -> PlayoffStandings:
     playoff = models.Playoff.load_by_season(sim_data.season)
     subleagues = sim_data.league.subleagues.values()
 
-    tables = {}
-    for subleague in subleagues:
-        games = Table.grid(expand=True)
-        games.add_column("Seed", width=1)
-        games.add_column("Name")
-        games.add_column("Wins", width=1)
-        tables[subleague.name] = games
-
-    teams: dict[str, dict[str, list]]
+    games: Games
     current_round: models.PlayoffRound
     for playoff_round in playoff.rounds:
         if not playoff_round.games:
             break
+
         current_round = playoff_round
-        teams = {subleague.name: defaultdict(list) for subleague in subleagues}
+        games = {subleague.name: defaultdict(list) for subleague in subleagues}
         for matchup in current_round.matchups:
             if matchup.away_team:
                 try:
                     subleague = subleague_for_team(subleagues, matchup.away_team)
                 except KeyError:
                     continue
-                teams[subleague][matchup.id].append((
-                    str(matchup.away_seed + 1),
-                    Text(matchup.away_team.nickname, style=matchup.away_team.main_color),
-                    str(matchup.away_wins),
+                games[subleague][matchup.id].append(Row(
+                    seed=str(matchup.away_seed + 1),
+                    name=matchup.away_team.nickname,
+                    color=matchup.away_team.main_color,
+                    wins=str(matchup.away_wins),
                 ))
             if matchup.home_team:
                 try:
                     subleague = subleague_for_team(subleagues, matchup.home_team)
                 except KeyError:
                     continue
-                teams[subleague][matchup.id].append((
-                    str(matchup.home_seed + 1),
-                    Text(matchup.home_team.nickname, style=matchup.home_team.main_color),
-                    str(matchup.home_wins)
+                games[subleague][matchup.id].append(Row(
+                    seed=str(matchup.home_seed + 1),
+                    name=matchup.home_team.nickname,
+                    color=matchup.home_team.main_color,
+                    wins=str(matchup.home_wins),
                 ))
 
-    for subleague, table in tables.items():
-        matches = sorted(teams[subleague].values())
-        for match in matches:
-            for team in sorted(match):
-                table.add_row(*team)
-            table.add_row()
-
-    game_data: Prediction = {
-        "league": sim_data.league.name,
+    game_data: PlayoffStandings = {
         "name": playoff.name,
         "round": current_round.name,
-        "games": tables,
+        "games": games,
     }
     return game_data

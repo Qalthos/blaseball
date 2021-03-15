@@ -5,7 +5,7 @@ from flask import Flask, render_template
 from flask_caching import Cache
 
 from party import season
-from party.models.subleague import Subleague
+from party.models.league import League
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
@@ -21,9 +21,9 @@ def show_standings() -> str:
 
 
 @cache.memoize()
-def get_league(league_id: str, season_number: int) -> List[Subleague]:
+def get_league(league_id: str, season_number: int) -> League:
     # season_number is used to keep the memoization accurate
-    return season.get_subleagues(league_id)
+    return season.get_league(league_id)
 
 
 @cache.memoize(timeout=900)

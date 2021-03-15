@@ -35,14 +35,17 @@ def update_standings(title: str, data: Prediction) -> None:
         teams.add_column("Record", width=6, justify="right")
         teams.add_column("Estimate", width=3, justify="right")
         for row in rows:
-            teams.add_row(
-                row.badge,
-                Text.assemble((row.name, row.color), row.tiebreaker),
-                row.championships,
-                row.wins,
-                row.record,
-                row.estimate,
-            )
+            if not row:
+                teams.add_row()
+            else:
+                teams.add_row(
+                    row.badge,
+                    Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
+                    "●" * row.championships,
+                    f"{'*' if row.in_progress else ''}{row.wins}",
+                    row.record,
+                    row.estimate,
+                )
 
         layout[subleague].update(Panel(
             teams,

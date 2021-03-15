@@ -12,14 +12,16 @@ class Row(NamedTuple):
     badge: str
     name: str
     color: str
-    tiebreaker: str
-    championships: str
-    wins: str
+    tiebreaker: int
+    championships: int
+    in_progress: bool
+    wins: int
     record: str
+    earliest: int
     estimate: Optional[str]
 
 
-Prediction = Dict[str, List[Row]]
+Prediction = Dict[str, List[Optional[Row]]]
 
 
 def get_standings(season: int) -> models.Standings:
@@ -45,17 +47,17 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
         badge = ""
         trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
 
-    star = "*" if team.games_played < (day + 1) < 100 else " "
-    championships = "●" * team.championships if team.championships < 4 else f"●*{team.championships}"
     return Row(
-        badge,
-        team.name,
-        team.color,
-        f"[{team.tiebreaker}]",
-        championships,
-        f"{star}{team.wins}",
-        team.record,
-        trophy or str(estimate) if estimate > 33 else None,
+        badge=badge,
+        name=team.name,
+        color=team.color,
+        tiebreaker=team.tiebreaker,
+        championships=team.championships,
+        in_progress=bool(team.games_played < (day + 1) < 100),
+        wins=team.wins,
+        record=team.record,
+        earliest=needed + (99 - day + 1) // 2,
+        estimate=trophy or str(estimate) if estimate > 33 else None,
     )
 
 
@@ -70,7 +72,7 @@ def get_game_data(season: int, day: int, league: League) -> Prediction:
 
         for team in subleague.playoff_teams:
             predictions[subleague.name].append(format_row(subleague, team, day))
-        predictions[subleague.name].append(Row("", "", "", "", "", "", "", ""))
+        predictions[subleague.name].append(None)
         for team in subleague.remainder:
             predictions[subleague.name].append(format_row(subleague, team, day))
 

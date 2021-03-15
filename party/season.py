@@ -3,6 +3,7 @@ from typing import Dict, List, NamedTuple, Optional
 
 from blaseball_mike import models
 
+from party.models.league import League
 from party.models.subleague import Subleague
 from party.models.team import Team
 
@@ -25,17 +26,10 @@ def get_standings(season: int) -> models.Standings:
     return models.Season.load(season_number=season).standings
 
 
-def get_subleagues(league_id: str) -> List[Subleague]:
+def get_league(league_id: str) -> League:
     league = models.League.load_by_id(id_=league_id)
     tiebreakers = next(iter(league.tiebreakers.values()))
-
-    subleagues = []
-    for subleague_id in league.subleagues:
-        subleagues.append(Subleague.load(
-            id_=subleague_id,
-            tiebreakers=list(tiebreakers.order),
-        ))
-    return subleagues
+    return League.load(league, tiebreakers=list(tiebreakers.order))
 
 
 def format_row(subleague: Subleague, team: Team, day: int) -> Row:
@@ -65,13 +59,13 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
     )
 
 
-def get_game_data(season: int, day: int, subleagues: List[Subleague]) -> Prediction:
+def get_game_data(season: int, day: int, league: League) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
     standings = get_standings(season)
 
     predictions: Prediction = defaultdict(list)
-    for subleague in subleagues:
+    for subleague in league.subleagues:
         subleague.update(standings)
 
         for team in subleague.playoff_teams:

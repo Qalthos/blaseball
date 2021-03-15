@@ -34,8 +34,7 @@ class Subleague:
     divisions: List[Division]
 
     @classmethod
-    def load(cls, id_: str, tiebreakers: List[str]) -> "Subleague":
-        subleague = models.Subleague.load(id_=id_)
+    def load(cls, subleague: models.Subleague, tiebreakers: List[str]) -> "Subleague":
         divisions = [
             Division.load(division, tiebreakers)
             for division in subleague.divisions.values()

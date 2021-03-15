@@ -34,7 +34,7 @@ def get_league(league_id: str) -> League:
     return League.load(league, tiebreakers=list(tiebreakers.order))
 
 
-def format_row(subleague: Subleague, team: Team, day: int) -> Row:
+def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Row:
     playoff = subleague.playoff_teams
     if team in playoff:
         needed = team - subleague.cutoff
@@ -44,7 +44,7 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
     else:
         needed = playoff.cutoff - team
         estimate = team.estimate_party_time(needed)
-        badge = ""
+        badge = "▼" if team in league.bottom_four else ""
         trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
 
     return Row(
@@ -65,15 +65,15 @@ def get_game_data(season: int, day: int, league: League) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
     standings = get_standings(season)
+    league.update(standings)
 
     predictions: Prediction = defaultdict(list)
     for subleague in league.subleagues:
-        subleague.update(standings)
 
         for team in subleague.playoff_teams:
-            predictions[subleague.name].append(format_row(subleague, team, day))
+            predictions[subleague.name].append(format_row(league, subleague, team, day))
         predictions[subleague.name].append(None)
         for team in subleague.remainder:
-            predictions[subleague.name].append(format_row(subleague, team, day))
+            predictions[subleague.name].append(format_row(league, subleague, team, day))
 
     return predictions

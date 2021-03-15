@@ -42,6 +42,11 @@ class Subleague:
         return cls(name=subleague.name, divisions=divisions)
 
     @property
+    def teams(self):
+        for division in self.divisions:
+            yield from division.teams
+
+    @property
     def playoff_teams(self) -> PlayoffTeams:
         return PlayoffTeams.load(*self.divisions)
 

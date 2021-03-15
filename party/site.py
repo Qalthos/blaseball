@@ -12,11 +12,10 @@ cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
 
 @app.route("/")
-@cache.cached(timeout=900)
+@cache.cached(timeout=60)
 def show_standings() -> str:
     sim_data = models.SimulationData.load()
-    subleagues = get_league(sim_data.league.id, season)
-    standings = season.get_game_data(sim_data.season, sim_data.day, subleagues)
+    standings = get_standings(sim_data.league.id, sim_data.season, sim_data.day)
 
     return render_template("standings.j2", sim=sim_data, standings=standings)
 
@@ -25,3 +24,9 @@ def show_standings() -> str:
 def get_league(league_id: str, season_number: int) -> List[Subleague]:
     # season_number is used to keep the memoization accurate
     return season.get_subleagues(league_id)
+
+
+@cache.memoize(timeout=900)
+def get_standings(league_id: str, season_number: int, day_number: int) -> season.Prediction:
+    subleagues = get_league(league_id, season_number)
+    return season.get_game_data(season_number, day_number, subleagues)

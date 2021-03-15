@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, NamedTuple
+from typing import Dict, List, NamedTuple, Optional
 
 from blaseball_mike import models
 
@@ -15,7 +15,7 @@ class Row(NamedTuple):
     championships: str
     wins: str
     record: str
-    estimate: str
+    estimate: Optional[str]
 
 
 Prediction = Dict[str, List[Row]]
@@ -61,7 +61,7 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
         championships,
         f"{star}{team.wins}",
         team.record,
-        trophy or str(estimate),
+        trophy or str(estimate) if estimate > 33 else None,
     )
 
 

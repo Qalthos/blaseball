@@ -10,11 +10,6 @@
   will recieve an extra Will in the Election.
 </p>
 <p>
-  The third column is the number of championships this team has won, either
-  represented by a circle per win, or "●*&lt;number of championships&gt;" if
-  that number is greater than three.
-</p>
-<p>
   In the last column, a "🏆" means that this team has clinched a playoff spot
   for their subleague, and will see a postseason birth unless Black Hole or
   Sun 2 weather causes them to drop out of this position.<br />
@@ -30,8 +25,9 @@
   <h2>{{ league }}</h2>
   <table style="width: 85%;">
     <tr>
-      <th></th>
-      <th>Team</th>
+      <th />
+      <th />
+      <th style="text-align: left;">Team Name</th>
       <th>Wins</th>
       <th>Record</th>
       <th>Quickest</th>
@@ -41,7 +37,8 @@
     <tr>
       {% if team %}
       <td>{{ team.badge }}</td>
-      <td>[{{ team.tiebreaker }}]{{ team.name }}</td>
+      <td style="text-align: right;">[{{ team.tiebreaker }}]</td>
+      <td>{{ team.name }}</td>
       <td style="text-align: center;">{{ "*" if team.in_progress else "" }}{{ team.wins }}</td>
       <td style="text-align: center;">{{ team.record }}</td>
       <td style="text-align: center;">{{ team.earliest }}</td>

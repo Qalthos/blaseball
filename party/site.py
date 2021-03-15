@@ -26,7 +26,7 @@ def get_league(league_id: str, season_number: int) -> League:
     return season.get_league(league_id)
 
 
-@cache.memoize(timeout=900)
+@cache.memoize(timeout=300)
 def get_standings(league_id: str, season_number: int, day_number: int) -> season.Prediction:
     subleagues = get_league(league_id, season_number)
     return season.get_game_data(season_number, day_number, subleagues)

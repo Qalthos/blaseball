@@ -56,7 +56,7 @@ def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Ro
         in_progress=bool(team.games_played < (day + 1) < 100),
         wins=team.wins,
         record=team.record,
-        earliest=needed + (99 - day + 1) // 2,
+        earliest=team.games_played + (99 - team.games_played - needed) // 2 + 1,
         estimate=trophy or str(estimate) if estimate > 33 else None,
     )
 

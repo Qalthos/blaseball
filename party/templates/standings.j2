@@ -1,5 +1,7 @@
 <!doctype html>
-<title>{{ sim.league.name }} Season {{ sim.season }} Standings</title>
+<title>{{ league }} Season {{ season }} Standings</title>
+
+<p>Data updated on {{ updated.strftime("%H:%M") }} UTC</p>
 
 <p>
   In the first column, "L" or "H" indicates that this team is the top team of
@@ -20,9 +22,9 @@
   presently in the running for the postseason or not.
 </p>
 
-{% for league, teams in standings.items() %}
+{% for subleague, teams in standings.items() %}
 <div style="width: 50%; float: left;">
-  <h2>{{ league }}</h2>
+  <h2>{{ subleague }}</h2>
   <table style="width: 85%;">
     <tr>
       <th />
@@ -36,13 +38,13 @@
     {% for team in teams %}
     <tr>
       {% if team %}
-      <td>{{ team.badge }}</td>
-      <td style="text-align: right;">[{{ team.tiebreaker }}]</td>
-      <td>{{ team.name }}</td>
-      <td style="text-align: center;">{{ "*" if team.in_progress else "" }}{{ team.wins }}</td>
-      <td style="text-align: center;">{{ team.record }}</td>
-      <td style="text-align: center;">{{ team.earliest }}</td>
-      <td style="text-align: center;">{{ team.estimate }}</td>
+      <td>{{ team[0] }}</td>
+      <td style="text-align: right;">[{{ team[3] }}]</td>
+      <td>{{ team[1] }}</td>
+      <td style="text-align: center;">{{ "*" if team[5] else "" }}{{ team[6] }}</td>
+      <td style="text-align: center;">{{ team[7] }}</td>
+      <td style="text-align: center;">{{ team[8] }}</td>
+      <td style="text-align: center;">{{ team[9] }}</td>
       {% endif %}
     </tr>
     {% endfor %}

@@ -41,7 +41,7 @@ def update_standings(title: str, data: Prediction) -> None:
                 teams.add_row(
                     row.badge,
                     Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
-                    "●" * row.championships,
+                    "●" * row.championships if row.championships < 4 else f"●x{row.championships}",
                     f"{'*' if row.in_progress else ''}{row.wins}",
                     row.record,
                     row.estimate,

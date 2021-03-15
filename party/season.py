@@ -25,7 +25,8 @@ def get_standings(season: int) -> models.Standings:
     return models.Season.load(season_number=season).standings
 
 
-def get_subleagues(league: models.League) -> List[Subleague]:
+def get_subleagues(league_id: str) -> List[Subleague]:
+    league = models.League.load_by_id(id_=league_id)
     tiebreakers = next(iter(league.tiebreakers.values()))
 
     subleagues = []
@@ -64,19 +65,19 @@ def format_row(subleague: Subleague, team: Team, day: int) -> Row:
     )
 
 
-def get_game_data(sim_data: models.SimulationData, subleagues: List[Subleague]) -> Prediction:
+def get_game_data(season: int, day: int, subleagues: List[Subleague]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
-    standings = get_standings(sim_data.season)
+    standings = get_standings(season)
 
     predictions: Prediction = defaultdict(list)
     for subleague in subleagues:
         subleague.update(standings)
 
         for team in subleague.playoff_teams:
-            predictions[subleague.name].append(format_row(subleague, team, sim_data.day))
+            predictions[subleague.name].append(format_row(subleague, team, day))
         predictions[subleague.name].append(Row("", "", "", "", "", "", "", ""))
         for team in subleague.remainder:
-            predictions[subleague.name].append(format_row(subleague, team, sim_data.day))
+            predictions[subleague.name].append(format_row(subleague, team, day))
 
     return predictions

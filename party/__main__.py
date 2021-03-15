@@ -6,8 +6,8 @@ from party import display, postseason, season
 def main() -> None:
     sim_data = models.SimulationData.load()
     if sim_data.day < 99:
-        subleagues = season.get_subleagues(sim_data.league)
-        game_data = season.get_game_data(sim_data, subleagues)
+        subleagues = season.get_subleagues(sim_data.league.id)
+        game_data = season.get_game_data(sim_data.season, sim_data.day, subleagues)
         display.update_standings(
             f"{sim_data.league.name} Season {sim_data.season} Day {sim_data.day + 1}",
             game_data,

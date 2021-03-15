@@ -25,12 +25,12 @@
 
 {% for league, teams in standings.items() %}
 <div style="width: 50%; float: left;">
-	<p>{{ league }}</p>
-	<table>
+	<h2>{{ league }}</h2>
+	<table style="width: 85%;">
 		<tr>
 			<th></th>
 			<th>Team</th>
-			<th></th>
+			<th>Championships</th>
 			<th>Wins</th>
 			<th>Record</th>
 			<th>Estimate</th>
@@ -40,9 +40,9 @@
 			<td>{{ team.badge }}</td>
 			<td>{{ team.name }}{{ team.tiebreaker }}</td>
 			<td>{{ team.championships }}</td>
-			<td>{{ team.wins }}</td>
-			<td>{{ team.record }}</td>
-			<td>{{ team.estimate }}</td>
+			<td style="text-align: center;">{{ team.wins }}</td>
+			<td style="text-align: center;">{{ team.record }}</td>
+			<td style="text-align: center;">{{ team.estimate }}</td>
 		</tr>
 		{% endfor %}
 	</table>

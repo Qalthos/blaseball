@@ -13,7 +13,7 @@ def main():
 
     bundle = {
         "updated": datetime.now(timezone.utc).isoformat(),
-        "records": records,
+        "team_data": records,
         "teams": teams,
     }
     with open("/tmp/teams.json", "w") as json_file:

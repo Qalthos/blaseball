@@ -5,13 +5,14 @@
 </head>
 
 <body>
+  <p>Back to <a href="{{ url_for('show_standings') }}">overall standings</a></p>
   <table>
     <tr>
       <th>Team</th>
       <th>Record</th>
       <th>Win%</th>
     </tr>
-    {% for team, record in team_data.items() %}
+    {% for team, record in team_data[team_id].items() %}
     <tr>
       <td><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
       <td>{{ record[0] }}-{{ record[1] }}</td>

@@ -8,15 +8,24 @@
   <table>
     <tr>
       <th>Team</th>
+      <th>Pitcher</th>
       <th>Record</th>
       <th>Win%</th>
     </tr>
     {% for team, record in team_data[team_id].items() %}
     <tr>
-      <td><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
-      <td class="number">{{ record[0] }}-{{ record[1] - record[0] }}</td>
-      <td class="number">{{ "{0:.0f}".format(record[0] / record[1] * 100) }}</td>
+      <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
+      <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
+      <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
     </tr>
+    {% for pitcher, single_record in record["pitchers"].items() %}
+    <tr>
+      <td class="spacer"/>
+      <td>{{ pitcher }}</td>
+      <td class="number">{{ single_record[0] }}-{{ single_record[1] - single_record[0] }}</td>
+      <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
+    </tr>
+    {% endfor %}
     {% endfor %}
   </table>
 {% endblock %}

@@ -17,7 +17,7 @@ def main():
         "teams": teams,
     }
     with open("/tmp/teams.json", "w") as json_file:
-        json.dump(bundle, json_file, default=lambda o: o.to_tuple())
+        json.dump(bundle, json_file, default=lambda o: o.to_json())
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ class Row(NamedTuple):
     record: str
     earliest: int
     estimate: Optional[str]
+    id: str
 
 
 Prediction = Dict[str, List[Optional[Row]]]
@@ -48,6 +49,7 @@ def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Ro
         trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
 
     return Row(
+        id=team.id,
         badge=badge,
         name=team.name,
         color=team.color,

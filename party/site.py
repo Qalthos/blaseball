@@ -47,10 +47,8 @@ def show_standings_json() -> str:
 
 
 @app.route("/teams/<string:team_id>")
-@cache.memoize(timeout=1800)
+@cache.memoize(timeout=60)
 def show_team_stats(team_id: str):
-    sim = models.SimulationData.load()
-    all_teams = sim.league.teams
     teams_json = show_teams_json()
     if teams_json:
         bundle = json.loads(teams_json)
@@ -58,7 +56,14 @@ def show_team_stats(team_id: str):
     else:
         team_data = get_team_data(season)[team_id]
 
-    return render_template("team.j2", team_id=team_id, team_data=team_data, teams=all_teams)
+    sim = models.SimulationData.load()
+    all_teams = sim.league.teams
+    return render_template(
+        "team.j2",
+        team_id=team_id,
+        team_data=team_data,
+        teams=all_teams
+    )
 
 
 @app.route("/teams.json")

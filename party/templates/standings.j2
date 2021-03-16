@@ -48,7 +48,7 @@
         {% if team %}
         <td>{{ team[0] }}</td>
         <td class="tiebreaker">[{{ team[3] }}]</td>
-        <td><a href="/teams/{{ team[10] }}">{{ team[1] }}</a></td>
+        <td><a href="{{ url_for('show_team_stats', team_id=team[10]) }}">{{ team[1] }}</a></td>
         <td class="number">{{ "*" if team[5] else "" }}{{ team[6] }}</td>
         <td class="number">{{ team[7] }}</td>
         <td class="number">{{ team[8] }}</td>

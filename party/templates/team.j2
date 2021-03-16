@@ -6,16 +6,19 @@
 
 <body>
   <p>Back to <a href="{{ url_for('show_standings') }}">overall standings</a></p>
+  <p>This <em>does not</em> know about Sun 2 or Black Hole events. This is just about the end-of-game result.</p>
   <table>
     <tr>
       <th>Team</th>
-      <th>Record</th>
+      <th>Wins</th>
+      <th>Games Played</th>
       <th>Win%</th>
     </tr>
     {% for team, record in team_data[team_id].items() %}
     <tr>
       <td><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
-      <td>{{ record[0] }}-{{ record[1] }}</td>
+      <td>{{ record[0] }}</td>
+      <td>{{ record[1] }}</td>
       <td>{{ "{0:.0f}".format(record[0] / record[1] * 100) }}</td>
     </tr>
     {% endfor %}

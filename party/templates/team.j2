@@ -1,0 +1,22 @@
+<!doctype html>
+<head>
+  <title>{{ teams[team_id].nickname }} season standings</title>
+  <link rel="stylesheet" href="/static/blaseball.css" />
+</head>
+
+<body>
+	<table>
+    <tr>
+      <th>Team</th>
+      <th>Record</th>
+      <th>Win%</th>
+    </tr>
+    {% for team, record in team_data.items() %}
+    <tr>
+      <td><a href="/teams/{{team}}">{{ teams[team].nickname }}</a></td>
+      <td>{{ record }}</td>
+      <td>{{ "{0:.0f}".format(record[0] / record[1] * 100) }}</td>
+    </tr>
+		{% endfor %}
+	</table>
+</body>

@@ -1,12 +1,11 @@
 import json
 from datetime import datetime
-from typing import List
 
 from blaseball_mike import models
 from flask import Flask, render_template
 from flask_caching import Cache
 
-from party import season
+from party import season, teams
 from party.models.league import League
 
 app = Flask(__name__)
@@ -47,6 +46,30 @@ def show_standings_json() -> str:
         return ""
 
 
+@app.route("/teams/<string:team_id>")
+@cache.memoize(timeout=1800)
+def show_team_stats(team_id: str):
+    sim = models.SimulationData.load()
+    all_teams = sim.league.teams
+    teams_json = show_teams_json()
+    if teams_json:
+        bundle = json.loads(teams_json)
+        team_data = bundle[team_id]
+    else:
+        team_data = get_team_data(season)[team_id]
+
+    return render_template("team.j2", team_id=team_id, team_data=team_data, teams=all_teams)
+
+
+@app.route("/teams.json")
+def show_teams_json():
+    try:
+        with open("/tmp/teams.json") as json_file:
+            return json_file.read()
+    except FileNotFoundError:
+        return ""
+
+
 @cache.memoize()
 def get_league(league_id: str, season_number: int) -> League:
     # season_number is used to keep the memoization accurate
@@ -54,6 +77,11 @@ def get_league(league_id: str, season_number: int) -> League:
 
 
 @cache.memoize(timeout=300)
-def get_standings(league_id: str, season_number: int, day_number: int) -> season.Prediction:
-    subleagues = get_league(league_id, season_number)
-    return season.get_game_data(season_number, day_number, subleagues)
+def get_standings(league_id: str, season_number: int, day_number: int):
+    league = get_league(league_id, season_number)
+    return season.get_game_data(season_number, day_number, league)
+
+
+@cache.memoize(timeout=900)
+def get_team_data(season: int):
+    return teams.collect_records(season)

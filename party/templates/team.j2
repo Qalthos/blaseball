@@ -1,10 +1,8 @@
-<!doctype html>
-<head>
-  <title>{{ teams[team_id].nickname }} season standings</title>
-  <link rel="stylesheet" href="/static/blaseball.css" />
-</head>
+{% extends 'base.j2' %}
 
-<body>
+{% block title %}{{ teams[team_id].nickname }} season standings{% endblock %}
+
+{% block content %}
   <p>Back to <a href="{{ url_for('show_standings') }}">overall standings</a></p>
   <p>This <em>does not</em> know about Sun 2 or Black Hole events. This is just about the end-of-game result.</p>
   <table>
@@ -21,4 +19,4 @@
     </tr>
     {% endfor %}
   </table>
-</body>
+{% endblock %}

@@ -1,12 +1,8 @@
-<!doctype html>
-<head>
-  <title>{{ league }} Season {{ season }} Standings</title>
-  <link rel="stylesheet" href="/static/blaseball.css" />
-</head>
+{% extends 'base.j2' %}
 
-<body>
-  <p class="update">Data updated on {{ updated.strftime("%H:%M") }} UTC</p>
+{% block title %}{{ league }} Season {{ season }} Standings{% endblock %}
 
+{% block content %}
   <p>
     In the first column, "L" or "H" indicates that this team is the top team of
     the Low or High division of their sub-league, respectively.<br />
@@ -61,4 +57,4 @@
     </table>
   </div>
   {% endfor %}
-</body>
+{% endblock %}

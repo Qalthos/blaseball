@@ -1,0 +1,10 @@
+<!doctype html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/blaseball.css" />
+</head>
+
+<body>
+  <p class="update">Data updated on {{ updated.strftime("%H:%M") }} UTC</p>
+  {% block content %}{% endblock %}
+</body>

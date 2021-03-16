@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from blaseball_mike import models
 from flask import Flask, render_template
@@ -30,7 +30,7 @@ def show_standings() -> str:
             "league": sim_data.league.name,
             "season": sim_data.season,
             "standings": standings,
-            "updated": datetime.now(),
+            "updated": datetime.now(timezone.utc),
         }
 
     return render_template("standings.j2", **bundle)
@@ -60,7 +60,7 @@ def show_team_stats(team_id: str):
             "team_id": team_id,
             "team_data": team_data,
             "teams": all_teams,
-            "updated": datetime.now(),
+            "updated": datetime.now(timezone.utc),
         }
 
     return render_template("team.j2", **bundle)

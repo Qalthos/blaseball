@@ -19,7 +19,6 @@ def show_standings() -> str:
     if standings_json:
         bundle = json.loads(standings_json)
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
-        return render_template("standings.j2", **bundle)
     else:
         sim_data = models.SimulationData.load()
         standings = get_standings(
@@ -27,14 +26,14 @@ def show_standings() -> str:
             sim_data.season,
             sim_data.day,
         )
+        bundle = {
+            "league": sim_data.league.name,
+            "season": sim_data.season,
+            "standings": standings,
+            "updated": datetime.now(),
+        }
 
-        return render_template(
-            "standings.j2",
-            league=sim_data.league.name,
-            season=sim_data.season,
-            standings=standings,
-            updated=datetime.now(),
-        )
+    return render_template("standings.j2", **bundle)
 
 
 @app.route("/standings.json")
@@ -52,18 +51,19 @@ def show_team_stats(team_id: str):
     teams_json = show_teams_json()
     if teams_json:
         bundle = json.loads(teams_json)
-        team_data = bundle[team_id]
+        bundle["team_id"] = team_id
+        bundle["updated"] = datetime.fromisoformat(bundle["updated"])
     else:
-        team_data = get_team_data(season)[team_id]
+        sim = models.SimulationData.load()
+        all_teams, team_data = get_team_data(sim.season)
+        bundle = {
+            "team_id": team_id,
+            "team_data": team_data,
+            "teams": all_teams,
+            "updated": datetime.now(),
+        }
 
-    sim = models.SimulationData.load()
-    all_teams = sim.league.teams
-    return render_template(
-        "team.j2",
-        team_id=team_id,
-        team_data=team_data,
-        teams=all_teams
-    )
+    return render_template("team.j2", **bundle)
 
 
 @app.route("/teams.json")

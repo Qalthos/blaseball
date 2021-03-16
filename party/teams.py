@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, Tuple
 
-from blaseball_mike import chronicler
+from blaseball_mike import chronicler, database
 
 
 @dataclass
@@ -17,7 +17,9 @@ class Record:
         return (self.wins, self.games)
 
 
-def collect_records(season: int) -> Dict[str, Dict[str, Record]]:
+def collect_records(season: int):
+    teams = database.get_all_teams()
+
     games_by_team: Dict[str, Dict[str, Record]] = defaultdict(lambda: defaultdict(Record))
     games = chronicler.get_games(season=season, finished=True)
     for game in games:
@@ -28,4 +30,4 @@ def collect_records(season: int) -> Dict[str, Dict[str, Record]]:
         games_by_team[home][away] += Record(int(is_home_win), 1)
         games_by_team[away][home] += Record(int(not is_home_win), 1)
 
-    return games_by_team
+    return teams, games_by_team

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+from datetime import datetime, timezone
 
 from blaseball_mike import models
 
@@ -8,10 +9,15 @@ from party.teams import collect_records
 
 def main():
     sim = models.SimulationData.load()
-    records = collect_records(sim.season)
+    teams, records = collect_records(sim.season)
 
+    bundle = {
+        "updated": datetime.now(timezone.utc).isoformat(),
+        "records": records,
+        "teams": teams,
+    }
     with open("/tmp/teams.json", "w") as json_file:
-        json.dump(records, json_file, default=lambda o: o.to_tuple())
+        json.dump(bundle, json_file, default=lambda o: o.to_tuple())
 
 
 if __name__ == "__main__":

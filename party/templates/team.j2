@@ -18,7 +18,7 @@
       <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
       <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
     </tr>
-    {% for pitcher, single_record in record["pitchers"].items() %}
+    {% for pitcher, single_record in record["pitchers"].items()|sort() %}
     <tr>
       <td class="spacer"/>
       <td>{{ pitcher }}</td>

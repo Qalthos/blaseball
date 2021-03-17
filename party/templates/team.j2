@@ -5,18 +5,12 @@
 {% block content %}
   <p>Back to <a href="{{ url_for('show_standings') }}">overall standings</a></p>
   <p>This <em>does not</em> know about Sun 2 or Black Hole events. This is just about the end-of-game result.</p>
+  {% for team, record in team_data[team_id].items() %}
   <table>
     <tr>
-      <th>Team</th>
-      <th>Pitcher</th>
-      <th>Record</th>
-      <th>Win%</th>
-    </tr>
-    {% for team, record in team_data[team_id].items() %}
-    <tr>
-      <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
-      <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
-      <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
+      <th colspan=2><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></th>
+      <th>{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</th>
+      <th>{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</th>
     </tr>
     {% for pitcher, single_record in record["pitchers"].items()|sort() %}
     <tr>
@@ -26,6 +20,6 @@
       <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
     </tr>
     {% endfor %}
-    {% endfor %}
   </table>
+  {% endfor %}
 {% endblock %}

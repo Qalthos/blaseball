@@ -9,9 +9,15 @@
   <div class="team-record">
     <table>
       <tr>
-        <th colspan=2><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></th>
-        <th>{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</th>
-        <th>{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</th>
+        <th>Team</th>
+        <th>Pitcher</th>
+        <th>Record</th>
+        <th>Win%</th>
+      </tr>
+      <tr>
+        <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team) }}">{{ teams[team].nickname }}</a></td>
+        <td>{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
+        <td>{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
       </tr>
       {% for pitcher, single_record in record["pitchers"].items()|sort() %}
       <tr>

@@ -5,6 +5,7 @@
 </head>
 
 <body>
+  <h1>{{ self.title() }}</h1>
   <p class="update">Data updated on {{ updated.strftime("%H:%M") }} UTC</p>
   {% block content %}{% endblock %}
 </body>

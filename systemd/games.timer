@@ -1,0 +1,10 @@
+[Unit]
+Description=Precache Blaseball games
+Requires=games.service
+
+[Timer]
+Unit=games.service
+OnCalendar=Mon..Sat 0/1:00
+
+[Install]
+WantedBy=timers.target

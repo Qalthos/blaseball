@@ -36,7 +36,7 @@ def show_team_stats(team_id: str):
         bundle["team_id"] = team_id
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
 
-    return render_template("team.j2", season=season_number, **bundle)
+    return render_template("team.j2", **bundle)
 
 
 @app.route("/teams.json")

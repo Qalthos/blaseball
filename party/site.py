@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Optional
 
 from flask import Flask, render_template, request
 from flask_caching import Cache
@@ -20,11 +21,8 @@ def show_standings() -> str:
 
 
 @app.route("/standings.json")
-def show_standings_json(season_no: int = None) -> str:
-    dest = "/srv/blaseball/standings.json"
-    if season_no is not None:
-        dest = "/srv/blaseball/standings.{season_no}.json"
-    return load_json(dest)
+def show_standings_json(season_no: Optional[int] = None) -> str:
+    return load_json("standings", season_no)
 
 
 @app.route("/teams/<string:team_id>")
@@ -40,14 +38,15 @@ def show_team_stats(team_id: str):
 
 
 @app.route("/teams.json")
-def show_teams_json(season_no: int = None):
-    dest = "/srv/blaseball/teams.json"
+def show_teams_json(season_no: Optional[int] = None):
+    return load_json("teams", season_no)
+
+
+def load_json(table: str, season_no: Optional[int] = None) -> str:
+    dest = f"/srv/blaseball/{table}.json"
     if season_no is not None:
-        dest = "/srv/blaseball/teams.{season_no}.json"
-    return load_json(dest)
+        dest = f"/srv/blaseball/{table}.{season_no}.json"
 
-
-def load_json(dest: str) -> str:
     try:
         with open(dest) as json_file:
             return json_file.read()

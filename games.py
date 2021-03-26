@@ -5,7 +5,7 @@ from pathlib import Path
 
 from blaseball_mike import models
 
-from party import teams
+from party.teams import collect_records
 
 
 def main(season_no=None):
@@ -13,7 +13,7 @@ def main(season_no=None):
         sim = models.SimulationData.load()
         season_no = sim.season
 
-    teams, records = teams.collect_records(season_no)
+    teams, records = collect_records(season_no)
     json_path = Path("/srv/blaseball")
 
     bundle = {

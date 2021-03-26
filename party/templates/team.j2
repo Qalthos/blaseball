@@ -1,6 +1,6 @@
 {% extends 'base.j2' %}
 
-{% block title %}{{ teams[team_id].nickname }} season standings{% endblock %}
+{% block title %}{{ teams[team_id].nickname }} season {{ season }} standings{% endblock %}
 
 {% block content %}
   <p>Back to <a href="{{ url_for('show_standings', season=season) }}">overall standings</a></p>

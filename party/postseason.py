@@ -8,6 +8,7 @@ class Row(NamedTuple):
     seed: str
     name: str
     color: str
+    championships: int
     wins: str
 
 
@@ -49,6 +50,7 @@ def get_playoffs(sim_data: models.SimulationData) -> PlayoffStandings:
                     seed=str(matchup.away_seed + 1),
                     name=matchup.away_team.nickname,
                     color=matchup.away_team.main_color,
+                    championships=matchup.away_team.championships,
                     wins=str(matchup.away_wins),
                 ))
             if matchup.home_team:
@@ -60,6 +62,7 @@ def get_playoffs(sim_data: models.SimulationData) -> PlayoffStandings:
                     seed=str(matchup.home_seed + 1),
                     name=matchup.home_team.nickname,
                     color=matchup.home_team.main_color,
+                    championships=matchup.home_team.championships,
                     wins=str(matchup.home_wins),
                 ))
 

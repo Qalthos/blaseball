@@ -182,7 +182,7 @@ def main():
     else:
         func = partial(global_feed, args.category)
 
-    with Live(func()) as live:
+    with Live(func(), vertical_overflow="crop") as live:
         while True:
             try:
                 time.sleep(60)

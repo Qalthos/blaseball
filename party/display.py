@@ -63,9 +63,15 @@ def update_postseason(title: str, data: Games) -> None:
             table = Table.grid(expand=True)
             table.add_column("Seed", width=1)
             table.add_column("Name")
+            table.add_column("Championships", style="#FFEB57", width=4)
             table.add_column("Wins", width=1)
             for row in game:
-                table.add_row(row.seed, Text(row.name, style=row.color), row.wins)
+                table.add_row(
+                    row.seed,
+                    Text(row.name, style=row.color),
+                    "●" * row.championships if row.championships < 4 else f"●x{row.championships}",
+                    row.wins,
+                )
             tables.append(Layout(table))
 
         all_tables = Layout()

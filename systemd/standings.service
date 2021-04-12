@@ -1,0 +1,10 @@
+[Unit]
+Description=Precache Blaseball standings
+Wants=standings.timer
+
+[Service]
+Type=oneshot
+ExecStart=/srv/blaseball/env/bin/python /srv/uwsgi/blaseball/standings.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Precache Blaseball games
+Wants=games.timer
+
+[Service]
+Type=oneshot
+ExecStart=/srv/blaseball/env/bin/python /srv/uwsgi/blaseball/games.py
+
+[Install]
+WantedBy=multi-user.target

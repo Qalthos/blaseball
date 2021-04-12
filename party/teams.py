@@ -1,20 +1,16 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, Tuple
+from typing import Dict, NamedTuple
 
 from blaseball_mike import chronicler, database
 
 
-@dataclass
-class Record:
+class Record(NamedTuple):
     wins: int = 0
     games: int = 0
 
-    def __add__(self, other: "Record") -> "Record":
+    def add(self, other: "Record") -> "Record":
         return type(self)(self.wins + other.wins, self.games + other.games)
-
-    def to_json(self) -> Tuple[int, int]:
-        return (self.wins, self.games)
 
 
 @dataclass
@@ -23,8 +19,8 @@ class TeamRecord:
     pitchers: Dict[str, Record] = field(default_factory=dict)
 
     def record_game(self, pitcher: str, outcome: Record) -> None:
-        self.overall += outcome
-        self.pitchers[pitcher] = self.pitchers.get(pitcher, Record()) + outcome
+        self.overall = self.overall.add(outcome)
+        self.pitchers[pitcher] = self.pitchers.get(pitcher, Record()).add(outcome)
 
     def to_json(self):
         return dict(
@@ -53,4 +49,4 @@ def collect_records(season: int):
             Record(int(not is_home_win), 1)
         )
 
-    return teams, games_by_team
+    return teams, dict(games_by_team)

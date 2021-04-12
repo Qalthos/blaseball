@@ -39,10 +39,10 @@ class Team:
         return int((99 * self.games_played) / (needed + self.games_played)) + 1
 
     def update(self, standings: models.Standings) -> None:
-        self.games_played = standings.games_played[self.id]
-        self.wins = standings.wins[self.id]
-        self.losses = standings.losses[self.id]
-        self.runs = standings.runs[self.id]
+        self.wins = standings.wins.get(self.id, 0)
+        self.losses = standings.losses.get(self.id, 0)
+        self.games_played = standings.games_played.get(self.id, self.wins + self.losses)
+        self.runs = standings.runs.get(self.id, 0)
 
     @property
     def sort(self) -> Tuple[int, int]:

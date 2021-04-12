@@ -1,0 +1,10 @@
+[Unit]
+Description=Precache Blaseball standings
+Requires=standings.service
+
+[Timer]
+Unit=standings.service
+OnCalendar=Mon..Fri *:0/5
+
+[Install]
+WantedBy=timers.target

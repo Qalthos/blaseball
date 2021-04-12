@@ -1,92 +1,54 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime
+from typing import Optional
 
-from blaseball_mike import models
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_caching import Cache
-
-from party import season, teams
-from party.models.league import League
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
 
 @app.route("/")
-@cache.cached(timeout=60)
 def show_standings() -> str:
-    standings_json = show_standings_json()
+    season_number = request.args.get("season", default=None, type=int)
+    standings_json = show_standings_json(season_number)
     if standings_json:
         bundle = json.loads(standings_json)
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
-    else:
-        sim_data = models.SimulationData.load()
-        standings = get_standings(
-            sim_data.league.id,
-            sim_data.season,
-            sim_data.day,
-        )
-        bundle = {
-            "league": sim_data.league.name,
-            "season": sim_data.season,
-            "standings": standings,
-            "updated": datetime.now(timezone.utc),
-        }
 
     return render_template("standings.j2", **bundle)
 
 
 @app.route("/standings.json")
-def show_standings_json() -> str:
-    try:
-        with open("/tmp/standings.json") as json_file:
-            return json_file.read()
-    except FileNotFoundError:
-        return ""
+def show_standings_json(season_no: Optional[int] = None) -> str:
+    return load_json("standings", season_no)
 
 
 @app.route("/teams/<string:team_id>")
-@cache.memoize(timeout=60)
 def show_team_stats(team_id: str):
-    teams_json = show_teams_json()
+    season_number = request.args.get("season", default=None, type=int)
+    teams_json = show_teams_json(season_number)
     if teams_json:
         bundle = json.loads(teams_json)
         bundle["team_id"] = team_id
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
-    else:
-        sim = models.SimulationData.load()
-        all_teams, team_data = get_team_data(sim.season)
-        bundle = {
-            "team_id": team_id,
-            "team_data": team_data,
-            "teams": all_teams,
-            "updated": datetime.now(timezone.utc),
-        }
 
     return render_template("team.j2", **bundle)
 
 
 @app.route("/teams.json")
-def show_teams_json():
+def show_teams_json(season_no: Optional[int] = None):
+    return load_json("teams", season_no)
+
+
+def load_json(table: str, season_no: Optional[int] = None) -> str:
+    dest = f"/srv/blaseball/{table}.json"
+    if season_no is not None:
+        dest = f"/srv/blaseball/{table}.{season_no}.json"
+
     try:
-        with open("/tmp/teams.json") as json_file:
+        with open(dest) as json_file:
             return json_file.read()
     except FileNotFoundError:
         return ""
-
-
-@cache.memoize()
-def get_league(league_id: str, season_number: int) -> League:
-    # season_number is used to keep the memoization accurate
-    return season.get_league(league_id)
-
-
-@cache.memoize(timeout=300)
-def get_standings(league_id: str, season_number: int, day_number: int):
-    league = get_league(league_id, season_number)
-    return season.get_game_data(season_number, day_number, league)
-
-
-@cache.memoize(timeout=900)
-def get_team_data(season: int):
-    return teams.collect_records(season)

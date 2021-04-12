@@ -17,7 +17,7 @@ class Row(NamedTuple):
     in_progress: bool
     wins: int
     record: str
-    earliest: int
+    earliest: str
     estimate: Optional[str]
     id: str
 
@@ -48,6 +48,8 @@ def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Ro
         badge = "▼" if team in league.bottom_four else ""
         trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
 
+    earliest = team.games_played + (99 - team.games_played - needed) // 2 + 1
+
     return Row(
         id=team.id,
         badge=badge,
@@ -58,7 +60,7 @@ def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Ro
         in_progress=bool(team.games_played < (day + 1) < 100),
         wins=team.wins,
         record=team.record,
-        earliest=team.games_played + (99 - team.games_played - needed) // 2 + 1,
+        earliest=str(earliest) if earliest > team.games_played else "N/A",
         estimate=trophy or str(estimate) if estimate > 33 else None,
     )
 

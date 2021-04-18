@@ -146,6 +146,8 @@ def _do_feed(feed: list[dict]) -> Table:
                 f"  {player} -> {player} + ",
                 item,
             )
+            for mod in metadata["mods"]:
+                changes.append(f"\n  +{mod}")
         elif entry["type"] == 128:
             # Player item dropped
             item = _item_stars(metadata["playerItemRatingAfter"])
@@ -157,6 +159,8 @@ def _do_feed(feed: list[dict]) -> Table:
                 item,
                 f" -> {player}",
             )
+            for mod in metadata["mods"]:
+                changes.append(f"\n  -{mod}")
         elif entry["type"] == 131:
             # Reverb lineup shuffle
             changes = ""
@@ -254,6 +258,9 @@ def _to_stars(rating: float) -> str:
 
 
 def _item_stars(rating: float) -> Text:
+    if rating is None:
+        # I really don't know what to do about this
+        return "None?"
     style = ITEM if rating >= 0 else "red"
     return Text(_to_stars(rating), style=style)
 

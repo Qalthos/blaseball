@@ -29,6 +29,28 @@ ITEM_MOD = "bababa"
 GAIN = Text("+", style="green")
 LOSE = Text("-", style="red")
 
+NO_CHANGE = [
+    2,  # Inning half announcement
+    7,  # Flyout
+    8,  # Ground out
+    9,  # Home run
+    10,  # Single
+    11,  # End of game announcement
+    12,  # Batter up announcement
+    13,  # Strike, swinging
+    14,  # Ball
+    15,  # Foul ball
+    29,  # Entity talking
+    54,  # Incineration
+    57,  # Ballpark renovations
+    70,  # Grind Rail trick
+    125,  # Entering the Hall
+    131,  # Reverb lineup shuffle
+    132,  # Reverb rotation shuffle
+    137,  # New player hatching
+    153,  # Team had a stat mass changed
+]
+
 
 def player_feed(player: str, category: Optional[int]) -> list[JSON]:
     return database.get_feed_player(player, category=category)
@@ -54,17 +76,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
 
         metadata = entry["metadata"]
         changes: Union[str, Text] = f"{entry['type']}: {metadata}"
-        if entry["type"] == 29:
-            # Entity talking
-            changes = ""
-        elif entry["type"] == 54:
-            # Incineration
-            changes = ""
-        elif entry["type"] == 57:
-            # Ballpark renovations
-            changes = ""
-        elif entry["type"] == 70:
-            # Grind Rail trick
+        if entry["type"] in NO_CHANGE:
             changes = ""
         elif entry["type"] == 81:
             # Tarot reading
@@ -145,9 +157,6 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 f"{_to_stars(metadata['before'])} -> ",
                 (_to_stars(metadata["after"]), "red"),
             )
-        elif entry["type"] == 125:
-            # Entering the Hall
-            changes = ""
         elif entry["type"] == 127:
             # Player item added
             item = _item_stars(metadata["playerItemRatingAfter"])
@@ -177,15 +186,6 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append("\n  ")
                 changes.append(LOSE)
                 changes.append(mod)
-        elif entry["type"] == 131:
-            # Reverb lineup shuffle
-            changes = ""
-        elif entry["type"] == 132:
-            # Reverb rotation shuffle
-            changes = ""
-        elif entry["type"] == 137:
-            # New player hatching
-            changes = ""
         elif entry["type"] == 144:
             # Exchange modifications
             mod_type = MOD[metadata["type"]]
@@ -219,9 +219,6 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 " -> ",
                 (metadata["to"], mod_type),
             )
-        elif entry["type"] == 153:
-            # Team had a stat mass changed
-            changes = ""
         elif entry["type"] == 171:
             # A dependent mod was removed due to its dependency being removed
             changes = Text(f"{metadata['source']}:")

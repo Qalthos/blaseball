@@ -16,10 +16,9 @@ layout.split(
     Layout(name="content"),
 )
 layout["header"].size = 3
-layout["content"].split(
+layout["content"].split_row(
     Layout(name="The Wild League"),
     Layout(name="The Mild League"),
-    direction="horizontal",
 )
 
 

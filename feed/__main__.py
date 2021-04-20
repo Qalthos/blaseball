@@ -8,6 +8,8 @@ from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
+from feed.enums import AdvancedStats
+
 JSON = dict[str, Any]
 LOC = [
     "Lineup",
@@ -220,11 +222,21 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             for mod in metadata["adds"]:
                 changes.append("\n  +")
                 changes.append(mod["mod"], style=MOD[mod["type"]])
-        elif entry["type"] == 180:
-            # Player secret stats reduced?
+        elif entry["type"] == 179:
+            # Player advanced stats increased
+            stat = AdvancedStats(metadata["type"]).name
             changes = Text.assemble(
-                f"{metadata['before']:0.2f} -> ",
-                (f"{metadata['after']:0.2f}", "red"),
+                f"{stat}:\n  ",
+                f"{_to_stars(metadata['before'])} -> ",
+                (_to_stars(metadata['after']), "green"),
+            )
+        elif entry["type"] == 180:
+            # Player advanced stats reduced
+            stat = AdvancedStats(metadata["type"]).name
+            changes = Text.assemble(
+                f"{stat}:\n  ",
+                f"{_to_stars(metadata['before'])} -> ",
+                (_to_stars(metadata['after']), "red"),
             )
         elif entry["type"] == 185:
             # Player item is destroyed

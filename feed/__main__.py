@@ -1,13 +1,14 @@
 import argparse
 import time
 from functools import partial
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from blaseball_mike import database
 from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
+JSON = dict[str, Any]
 LOC = [
     "Lineup",
     "Rotation",
@@ -24,25 +25,24 @@ TAROT = "#a16dc3"
 ITEM = "#6dc0ff"
 
 
-def player_feed(player: str, category: Optional[int]):
-    return _do_feed(database.get_feed_player(player, category=category))
+def player_feed(player: str, category: Optional[int]) -> list[JSON]:
+    return database.get_feed_player(player, category=category)
 
 
-def team_feed(team: str, category: Optional[int]):
-    return _do_feed(database.get_feed_team(team, category=category))
+def team_feed(team: str, category: Optional[int]) -> list[JSON]:
+    return database.get_feed_team(team, category=category)
 
 
-def global_feed(category: Optional[int]):
-    return _do_feed(database.get_feed_global(category=category))
+def global_feed(category: Optional[int]) -> list[JSON]:
+    return database.get_feed_global(category=category)
 
 
-def _do_feed(feed: list[dict]) -> Table:
+def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
     table = Table(expand=True)
     table.add_column("Day")
     table.add_column("Description")
     table.add_column("Changes", max_width=20)
 
-    print(feed[0])
     for entry in feed:
         day = f"{entry['season'] + 1}-{entry['day'] + 1}"
         description = entry["description"]
@@ -69,6 +69,8 @@ def _do_feed(feed: list[dict]) -> Table:
             )
         elif entry["type"] == 106:
             # Modification added
+            if metadata["mod"] in excludes:
+                continue
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
                 "+",
@@ -76,6 +78,8 @@ def _do_feed(feed: list[dict]) -> Table:
             )
         elif entry["type"] == 107:
             # Modification removed
+            if metadata["mod"] in excludes:
+                continue
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
                 "-",
@@ -269,11 +273,16 @@ def main():
     parser = argparse.ArgumentParser(description="Show Blaseball Feeds")
     parser.add_argument("-c", "--category", type=int, default=None)
     parser.add_argument("-n", "--interval", type=int, default=60)
+    parser.add_argument("--no-ghosts", action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-t", "--team", type=str)
     group.add_argument("-p", "--player", type=str)
-
     args = parser.parse_args()
+
+    excludes = []
+    if args.no_ghosts:
+        excludes.append("INHABITING")
+
     if args.player:
         func = partial(player_feed, args.player, args.category)
     elif args.team:
@@ -281,14 +290,14 @@ def main():
     else:
         func = partial(global_feed, args.category)
 
-    with Live(func(), vertical_overflow="crop") as live:
+    with Live(Table(), vertical_overflow="crop") as live:
         while True:
+            live.update(_do_feed(func(), excludes))
+
             try:
                 time.sleep(args.interval)
             except KeyboardInterrupt:
                 break
-
-            live.update(func())
 
 
 if __name__ == "__main__":

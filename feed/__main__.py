@@ -25,6 +25,9 @@ MOD = [
 ]
 TAROT = "#a16dc3"
 ITEM = "#6dc0ff"
+ITEM_MOD = "bababa"
+GAIN = Text("+", style="green")
+LOSE = Text("-", style="red")
 
 
 def player_feed(player: str, category: Optional[int]) -> list[JSON]:
@@ -75,7 +78,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 continue
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
-                "+",
+                GAIN,
                 (f"{metadata['mod']}", mod_type),
             )
         elif entry["type"] == 107:
@@ -84,16 +87,19 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 continue
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
-                "-",
+                LOSE,
                 (f"{metadata['mod']}", mod_type),
             )
         elif entry["type"] == 108:
             # Modifications expiring
             mod_type = MOD[metadata["type"]]
-            changes = Text("-")
-            changes.append(metadata["mods"][0], style=mod_type)
+            changes = Text.assemble(
+                LOSE,
+                (metadata["mods"][0], mod_type),
+            )
             for mod in metadata["mods"][1:]:
-                changes.append(" -")
+                changes.append("\n")
+                changes.append(LOSE)
                 changes.append(mod, style=mod_type)
         elif entry["type"] == 109:
             # Player added to team
@@ -147,26 +153,30 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             item = _item_stars(metadata["playerItemRatingAfter"])
             player = _to_stars(metadata["playerRating"])
             changes = Text.assemble(
-                ("+", "green"),
+                GAIN,
                 f"{metadata['itemName']}:\n",
                 f"  {player} -> {player} + ",
                 item,
             )
             for mod in metadata["mods"]:
-                changes.append(f"\n  +{mod}")
+                changes.append("\n  ")
+                changes.append(GAIN)
+                changes.append(mod, style=ITEM_MOD)
         elif entry["type"] == 128:
             # Player item dropped
             item = _item_stars(metadata["playerItemRatingAfter"])
             player = _to_stars(metadata["playerRating"])
             changes = Text.assemble(
-                ("-", "red"),
+                LOSE,
                 f"{metadata['itemName']}:\n",
                 f"  {player} + ",
                 item,
                 f" -> {player}",
             )
             for mod in metadata["mods"]:
-                changes.append(f"\n  -{mod}")
+                changes.append("\n  ")
+                changes.append(LOSE)
+                changes.append(mod)
         elif entry["type"] == 131:
             # Reverb lineup shuffle
             changes = ""
@@ -188,14 +198,16 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # Modifier added by source
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
-                f"{metadata['source']}:\n  +",
+                f"{metadata['source']}:\n  ",
+                GAIN,
                 (metadata["mod"], mod_type),
             )
         elif entry["type"] == 147:
             # Modifier removed by source
             mod_type = MOD[metadata["type"]]
             changes = Text.assemble(
-                f"{metadata['source']}:\n  -",
+                f"{metadata['source']}:\n  ",
+                LOSE,
                 (metadata["mod"], mod_type),
             )
         elif entry["type"] == 148:
@@ -214,13 +226,15 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # A dependent mod was removed due to its dependency being removed
             changes = Text(f"{metadata['source']}:")
             for mod in metadata["removes"]:
-                changes.append("\n  -")
+                changes.append("\n  ")
+                changes.append(LOSE)
                 changes.append(mod["mod"], style=MOD[mod["type"]])
         elif entry["type"] == 172:
             # Dependent mods were added by another mod
             changes = Text(f"{metadata['source']}:")
             for mod in metadata["adds"]:
-                changes.append("\n  +")
+                changes.append("\n  ")
+                changes.append(GAIN)
                 changes.append(mod["mod"], style=MOD[mod["type"]])
         elif entry["type"] == 179:
             # Player advanced stats increased

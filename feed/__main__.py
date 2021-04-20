@@ -8,7 +8,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
-from feed.enums import AdvancedStats
+from feed.enums import AdvancedStats, Tarot
 
 JSON = dict[str, Any]
 LOC = [
@@ -69,7 +69,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 81:
             # Tarot reading
             changes = Text(
-                " ".join(str(card + 1) for card in metadata["spread"]),
+                "\n".join(Tarot(card + 1).name for card in metadata["spread"]),
                 style=TAROT,
             )
         elif entry["type"] == 106:

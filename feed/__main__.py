@@ -255,28 +255,25 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 185:
             # Player item is destroyed
             changes = Text.assemble(
-                f"Durability: {metadata['itemHealthBefore']} -> ",
-                (str(metadata["itemHealthAfter"]), "red"),
+                _item_durability(metadata),
                 f"\n  {_to_stars(metadata['playerRating'])} + ",
                 _item_stars(metadata["playerItemRatingBefore"]),
                 f" -> {_to_stars(metadata['playerRating'])}",
             )
         elif entry["type"] == 186:
             # Player item is damaged
-            changes = Text.assemble(
-                f"Durability: {metadata['itemHealthBefore']} -> ",
-                (str(metadata["itemHealthAfter"]), "red"),
-            )
+            changes = _item_durability(metadata)
         elif entry["type"] == 187:
-            # Player item is repaired
+            # Player item is restored
             changes = Text.assemble(
-                f"Durability: {metadata['itemHealthBefore']} -> ",
-                (str(metadata["itemHealthAfter"]), "green"),
-                f"\n  {_to_stars(metadata['playerRating'])} + ",
-                _item_stars(metadata["playerItemRatingBefore"]),
+                _item_durability(metadata),
+                f"\n  {_to_stars(metadata['playerRating'])} ",
                 f" -> {_to_stars(metadata['playerRating'])} + ",
                 _item_stars(metadata["playerItemRatingAfter"]),
             )
+        elif entry["type"] == 188:
+            # Player item is repaired
+            changes = _item_durability(metadata)
 
         table.add_row(day, description, changes)
 
@@ -295,7 +292,23 @@ def _item_stars(rating: float) -> Text:
     return Text(_to_stars(rating), style=style)
 
 
-def main():
+def _item_durability(metadata: JSON) -> Text:
+    durability = metadata["itemDurability"]
+    health_before = metadata["itemHealthBefore"]
+    before = "●" * health_before + "○" * (durability - health_before)
+    health_after = metadata["itemHealthAfter"]
+    after = "●" * health_after + "○" * (durability - health_after)
+    after_color = "green" if health_after > health_before else "red"
+    return Text.assemble(
+        str(health_before),
+        (before, ITEM),
+        " -> ",
+        (str(health_after), after_color),
+        (after, ITEM),
+    )
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="Show Blaseball Feeds")
     parser.add_argument("-c", "--category", type=int, default=None)
     parser.add_argument("-n", "--interval", type=int, default=60)

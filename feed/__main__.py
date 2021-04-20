@@ -267,7 +267,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # Player item is restored
             changes = Text.assemble(
                 _item_durability(metadata),
-                f"\n  {_to_stars(metadata['playerRating'])} ",
+                f"\n  {_to_stars(metadata['playerRating'])}",
                 f" -> {_to_stars(metadata['playerRating'])} + ",
                 _item_stars(metadata["playerItemRatingAfter"]),
             )

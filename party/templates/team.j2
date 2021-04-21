@@ -3,7 +3,7 @@
 {% block title %}{{ team_data[team_id]["name"] }} season {{ season }} standings{% endblock %}
 
 {% block content %}
-  <p>Back to <a href="{{ url_for('show_standings', season=season) }}">overall standings</a></p>
+  <p>Back to <a href="{{ url_for('show_standings', season=season_param) }}">overall standings</a></p>
   <p>This <em>does not</em> know about Sun 2 or Black Hole events. This is just about the end-of-game result.</p>
   <h2>Games played by pitcher, by weather, and by stadium</h2>
   <div class="team-group">
@@ -68,7 +68,7 @@
           <th>Win%</th>
         </tr>
         <tr>
-          <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team, season=season) }}">{{ record["name"] }}</a></td>
+          <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team, season=season_param) }}">{{ record["name"] }}</a></td>
           <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
           <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
         </tr>

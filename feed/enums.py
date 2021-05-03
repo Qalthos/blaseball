@@ -1,23 +1,5 @@
 from enum import IntEnum
 
-AdvancedStats = IntEnum(
-    "AdvancedStats",
-    {
-        "Tragicness": 0,
-        "Thwackability": 2,
-        "Laserlikeness": 10,
-        "Continuation": 11,
-        "Ground Friction": 13,
-        "Shakespearianism": 14,
-        "Suppression": 15,
-        "Unthwackability": 16,
-        "Coldness": 17,
-        "Overpowerment": 18,
-        "Ruthlessness": 19,
-        "Watchfulness": 23,
-    },
-)
-
 
 Locations = IntEnum(
     "Locations",

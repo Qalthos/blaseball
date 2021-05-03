@@ -3,12 +3,12 @@ import time
 from functools import partial
 from typing import Any, Optional, Union
 
-from blaseball_mike import database
+from blaseball_mike import database, tables
 from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
-from feed.enums import AdvancedStats, Tarot
+from feed.enums import Tarot
 
 JSON = dict[str, Any]
 LOC = [
@@ -43,6 +43,7 @@ NO_CHANGE = [
     29,  # Entity talking
     54,  # Incineration
     57,  # Ballpark renovations
+    60,  # Blessing won
     70,  # Grind Rail trick
     125,  # Entering the Hall
     131,  # Reverb lineup shuffle
@@ -235,7 +236,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append(mod["mod"], style=MOD[mod["type"]])
         elif entry["type"] == 179:
             # Player advanced stats increased
-            stat = AdvancedStats(metadata["type"]).name
+            stat = tables.StatType(metadata["type"]).stat_name.capitalize()
             changes = Text.assemble(
                 f"{stat}:\n  ",
                 f"{_to_stars(metadata['before'])} -> ",
@@ -243,7 +244,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 180:
             # Player advanced stats reduced
-            stat = AdvancedStats(metadata["type"]).name
+            stat = tables.StatType(metadata["type"]).stat_name.capitalize()
             changes = Text.assemble(
                 f"{stat}:\n  ",
                 f"{_to_stars(metadata['before'])} -> ",
@@ -284,7 +285,7 @@ def _to_stars(rating: float) -> str:
 def _item_stars(rating: float) -> Text:
     if rating is None:
         # I really don't know what to do about this
-        return "None?"
+        return "???"
     style = ITEM if rating >= 0 else "red"
     return Text(_to_stars(rating), style=style)
 

@@ -9,7 +9,12 @@ URL = "https://www.blaseball.com/database/renovationProgress"
 
 
 def read_reno() -> dict[str, Any]:
-    data = requests.get(URL, params={"id": sys.argv[1]}).json()
+    try:
+        data = requests.get(URL, params={"id": sys.argv[1]}).json()
+    except requests.exceptions.ConnectionError:
+        # Uh-oh, retry?
+        time.sleep(10)
+        return read_reno()
 
     mods = sorted([
         (float(mod["percent"]), mod["id"])
@@ -20,6 +25,20 @@ def read_reno() -> dict[str, Any]:
         "progress": data["progress"]["toNext"],
         "mods": mods,
     }
+
+
+def extrapolate():
+    data = read_reno()
+    locked = sum(4**i for i in range(data["renos"])) * 1000000
+    next = 4**data["renos"] * 1000000
+    complete = next * data["progress"]
+    print(f"{next - complete:,.0f} needed for next renovation")
+    for mod in data["mods"]:
+        try:
+            estimate = (locked + complete) * mod[0] / 100
+        except ZeroDivisionError:
+            estimate = 0
+        print(f"{mod[1]}: {estimate:,.0f} coins")
 
 
 def update(progress: Progress, overall: int, mods: dict[str, tuple[int, str]], stats: dict[str, Any]) -> None:

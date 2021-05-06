@@ -13,14 +13,13 @@ def main(season_no=None):
         sim = models.SimulationData.load()
         season_no = sim.season
 
-    teams, records = collect_records(season_no)
+    records = collect_records(season_no)
     json_path = Path("/srv/blaseball")
 
     bundle = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "season": season_no,
         "team_data": records,
-        "teams": teams,
     }
     json_file_path = json_path / f"teams.{season_no}.json"
     with open(json_file_path, "w") as json_file:

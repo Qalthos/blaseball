@@ -1,12 +1,64 @@
 {% extends 'base.j2' %}
 
-{% block title %}{{ teams[team_id].nickname }} season {{ season }} standings{% endblock %}
+{% block title %}{{ team_data[team_id]["name"] }} season {{ season }} standings{% endblock %}
 
 {% block content %}
-  <p>Back to <a href="{{ url_for('show_standings', season=season) }}">overall standings</a></p>
+  <p>Back to <a href="{{ url_for('show_standings', season=season_param) }}">overall standings</a></p>
   <p>This <em>does not</em> know about Sun 2 or Black Hole events. This is just about the end-of-game result.</p>
+  <h2>Games played by pitcher, by weather, and by stadium</h2>
   <div class="team-group">
-    {% for team, record in team_data[team_id].items() %}
+    <div class="team-record">
+      <table>
+        <tr>
+          <th>Pitcher</th>
+          <th>Record</th>
+          <th>Win%</th>
+        </tr>
+        {% for pitcher, single_record in team_data[team_id]["pitchers"].items()|sort() %}
+        <tr>
+          <td>{{ pitcher }}</td>
+          <td class="number">{{ single_record[0] }}-{{ single_record[1] - single_record[0] }}</td>
+          <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="team-record">
+      <table>
+        <tr>
+          <th>Weather Type</th>
+          <th>Record</th>
+          <th>Win%</th>
+        </tr>
+        {% for weather, single_record in team_data[team_id]["weather"].items()|sort() %}
+        <tr>
+          <td>{{ weather }}</td>
+          <td class="number">{{ single_record[0] }}-{{ single_record[1] - single_record[0] }}</td>
+          <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="team-record">
+      <table>
+        <tr>
+          <th>Stadium</th>
+          <th>Record</th>
+          <th>Win%</th>
+        </tr>
+        {% for stadium, single_record in team_data[team_id]["stadia"].items()|sort() %}
+        <tr>
+          <td>{{ stadium }}</td>
+          <td class="number">{{ single_record[0] }}-{{ single_record[1] - single_record[0] }}</td>
+          <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <h2>Games played by team and opposing pitcher</h2>
+  <div class="team-group">
+    {% for team, record in team_data[team_id]["others"].items() %}
     <div class="team-record">
       <table>
         <tr>
@@ -16,7 +68,7 @@
           <th>Win%</th>
         </tr>
         <tr>
-          <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team, season=season) }}">{{ teams[team].nickname }}</a></td>
+          <td colspan=2><a href="{{ url_for('show_team_stats', team_id=team, season=season_param) }}">{{ record["name"] }}</a></td>
           <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
           <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
         </tr>

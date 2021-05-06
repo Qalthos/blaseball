@@ -15,6 +15,7 @@ def show_standings() -> str:
     standings_json = show_standings_json(season_number)
     if standings_json:
         bundle = json.loads(standings_json)
+        bundle["season_param"] = season_number
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
 
     return render_template("standings.j2", **bundle)
@@ -26,12 +27,13 @@ def show_standings_json(season_no: Optional[int] = None) -> str:
 
 
 @app.route("/teams/<string:team_id>")
-def show_team_stats(team_id: str):
+def show_team_stats(team_id: str) -> str:
     season_number = request.args.get("season", default=None, type=int)
     teams_json = show_teams_json(season_number)
     if teams_json:
         bundle = json.loads(teams_json)
         bundle["team_id"] = team_id
+        bundle["season_param"] = season_number
         bundle["updated"] = datetime.fromisoformat(bundle["updated"])
 
     return render_template("team.j2", **bundle)

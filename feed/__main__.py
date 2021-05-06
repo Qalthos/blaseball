@@ -3,26 +3,15 @@ import time
 from functools import partial
 from typing import Any, Optional, Union
 
-from blaseball_mike import database, tables
+from blaseball_mike import database
+from blaseball_mike.tables import StatType, Tarot
 from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
-from feed.enums import Tarot
+from feed.enums import Locations, ModColor
 
 JSON = dict[str, Any]
-LOC = [
-    "Lineup",
-    "Rotation",
-    "Shadow Lineup",
-    "Shadow Rotation",
-]
-MOD = [
-    "#dbbc0b",
-    "#c2157a",
-    "#0a78a3",
-    "#639e47",
-]
 TAROT = "#a16dc3"
 ITEM = "#6dc0ff"
 ITEM_MOD = "bababa"
@@ -82,14 +71,14 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 81:
             # Tarot reading
             changes = Text(
-                "\n".join(Tarot(card + 1).name for card in metadata["spread"]),
+                "\n".join(Tarot(card).text for card in metadata["spread"]),
                 style=TAROT,
             )
         elif entry["type"] == 106:
             # Modification added
             if metadata["mod"] in excludes:
                 continue
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 GAIN,
                 (f"{metadata['mod']}", mod_type),
@@ -98,14 +87,14 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # Modification removed
             if metadata["mod"] in excludes:
                 continue
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 LOSE,
                 (f"{metadata['mod']}", mod_type),
             )
         elif entry["type"] == 108:
             # Modifications expiring
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 LOSE,
                 (metadata["mods"][0], mod_type),
@@ -116,34 +105,42 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append(mod, style=mod_type)
         elif entry["type"] == 109:
             # Player added to team
-            changes = f"{LOC[metadata['location']]}: +{metadata['playerName']}"
+            location = Locations(metadata["location"]).name
+            changes = f"{location}: +{metadata['playerName']}"
         elif entry["type"] == 113:
             # Exchange players between teams
+            location_a = Locations(metadata["aLocaton"]).name
+            location_b = Locations(metadata["bLocaton"]).name
             changes = (
-                f"{metadata['aPlayerName']}: {metadata['aTeamName']} {LOC[metadata['aLocation']]}"
-                f" -> {metadata['bTeamName']} {LOC[metadata['bLocation']]}\n"
-                f"{metadata['bPlayerName']}: {metadata['bTeamName']} {LOC[metadata['bLocation']]}"
-                f" -> {metadata['aTeamName']} {LOC[metadata['aLocation']]}"
+                f"{metadata['aPlayerName']}: {metadata['aTeamName']} {location_a}"
+                f" -> {metadata['bTeamName']} {location_b}\n"
+                f"{metadata['bPlayerName']}: {metadata['bTeamName']} {location_b}"
+                f" -> {metadata['aTeamName']} {location_a}"
             )
         elif entry["type"] == 114:
             # Exchange players within a team
+            location_a = Locations(metadata["aLocaton"]).name
+            location_b = Locations(metadata["bLocaton"]).name
             changes = (
                 f"{metadata['aPlayerName']}:\n"
-                f" {LOC[metadata['aLocation']]} -> {LOC[metadata['bLocation']]}\n"
+                f" {location_a} -> {location_b}\n"
                 f"{metadata['bPlayerName']}:\n"
-                f" {LOC[metadata['bLocation']]} -> {LOC[metadata['aLocation']]}"
+                f" {location_b} -> {location_a}"
             )
         elif entry["type"] == 115:
             # Move a player
+            location_src = Locations(metadata["location"]).name
+            location_dest = Locations(metadata["receiveLocation"]).name
             changes = (
-                f"{metadata['playerName']}: {metadata['sendTeamName']} "
-                f"{LOC[metadata['location']]} -> {metadata['receiveTeamName']} "
-                f"{LOC[metadata['receiveLocation']]}"
+                f"{metadata['playerName']}: "
+                f"{metadata['sendTeamName']} {location_src} -> "
+                f"{metadata['receiveTeamName']} {location_dest}"
             )
         elif entry["type"] == 116:
             # Replace a player
+            location = Locations(metadata["location"]).name
             changes = (
-                f"{metadata['teamName']} {LOC[metadata['location']]}: "
+                f"{metadata['teamName']} {location}: "
                 f"{metadata['outPlayerName']} -> {metadata['inPlayerName']} "
             )
         elif entry["type"] == 117:
@@ -189,7 +186,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append(mod)
         elif entry["type"] == 144:
             # Exchange modifications
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 (metadata["from"], mod_type),
                 " -> ",
@@ -197,7 +194,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 146:
             # Modifier added by source
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 f"{metadata['source']}:\n  ",
                 GAIN,
@@ -205,7 +202,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 147:
             # Modifier removed by source
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 f"{metadata['source']}:\n  ",
                 LOSE,
@@ -213,7 +210,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 148:
             # Modifier exchange with source
-            mod_type = MOD[metadata["type"]]
+            mod_type = ModColor(metadata["type"]).name
             changes = Text.assemble(
                 f"{metadata['source']}:\n  ",
                 (metadata["from"], mod_type),
@@ -224,19 +221,21 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # A dependent mod was removed due to its dependency being removed
             changes = Text(f"{metadata['source']}:")
             for mod in metadata["removes"]:
+                mod_type = ModColor(mod["type"]).name
                 changes.append("\n  ")
                 changes.append(LOSE)
-                changes.append(mod["mod"], style=MOD[mod["type"]])
+                changes.append(mod["mod"], style=mod_type)
         elif entry["type"] == 172:
             # Dependent mods were added by another mod
             changes = Text(f"{metadata['source']}:")
             for mod in metadata["adds"]:
+                mod_type = ModColor(mod["type"]).name
                 changes.append("\n  ")
                 changes.append(GAIN)
-                changes.append(mod["mod"], style=MOD[mod["type"]])
+                changes.append(mod["mod"], style=mod_type)
         elif entry["type"] == 179:
             # Player advanced stats increased
-            stat = tables.StatType(metadata["type"]).stat_name.capitalize()
+            stat = StatType(metadata["type"]).stat_name.capitalize()
             changes = Text.assemble(
                 f"{stat}:\n  ",
                 f"{_to_stars(metadata['before'])} -> ",
@@ -244,7 +243,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 180:
             # Player advanced stats reduced
-            stat = tables.StatType(metadata["type"]).stat_name.capitalize()
+            stat = StatType(metadata["type"]).stat_name.capitalize()
             changes = Text.assemble(
                 f"{stat}:\n  ",
                 f"{_to_stars(metadata['before'])} -> ",

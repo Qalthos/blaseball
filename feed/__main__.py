@@ -109,8 +109,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             changes = f"{location}: +{metadata['playerName']}"
         elif entry["type"] == 113:
             # Exchange players between teams
-            location_a = Locations(metadata["aLocaton"]).name
-            location_b = Locations(metadata["bLocaton"]).name
+            location_a = Locations(metadata["aLocation"]).name
+            location_b = Locations(metadata["bLocation"]).name
             changes = (
                 f"{metadata['aPlayerName']}: {metadata['aTeamName']} {location_a}"
                 f" -> {metadata['bTeamName']} {location_b}\n"
@@ -119,8 +119,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 114:
             # Exchange players within a team
-            location_a = Locations(metadata["aLocaton"]).name
-            location_b = Locations(metadata["bLocaton"]).name
+            location_a = Locations(metadata["aLocation"]).name
+            location_b = Locations(metadata["bLocation"]).name
             changes = (
                 f"{metadata['aPlayerName']}:\n"
                 f" {location_a} -> {location_b}\n"

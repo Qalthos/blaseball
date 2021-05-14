@@ -11,15 +11,24 @@
       <table>
         <tr>
           <th>Pitcher</th>
+          <th>Team</th>
           <th>Record</th>
           <th>Win%</th>
         </tr>
-        {% for pitcher, single_record in team_data[team_id]["pitchers"].items()|sort() %}
+        {% for record in team_data[team_id]["pitchers"].values() %}
         <tr>
-          <td>{{ pitcher }}</td>
+          <td colspan=2>{{ pitcher["name"] }}</td>
+          <td class="number">{{ record["overall"][0] }}-{{ record["overall"][1] - record["overall"][0] }}</td>
+          <td class="number">{{ "{0:.0f}".format(record["overall"][0] / record["overall"][1] * 100) }}</td>
+        </tr>
+        {% for team, single_record in record["teams"].items()|sort() %}
+        <tr>
+          <td class="spacer"/>
+          <td>{{ team }}</td>
           <td class="number">{{ single_record[0] }}-{{ single_record[1] - single_record[0] }}</td>
           <td class="number">{{ "{0:.0f}".format(single_record[0] / single_record[1] * 100) }}</td>
         </tr>
+        {% endfor %}
         {% endfor %}
       </table>
     </div>

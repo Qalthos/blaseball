@@ -22,6 +22,24 @@ class Record(NamedTuple):
 
 
 @dataclass
+class PitcherRecord:
+    name: str
+    teams: dict[str, Record] = field(default_factory=dict)
+    overall: Record = Record()
+
+    def record_game(self, team: str, outcome: Record) -> None:
+        self.overall = self.overall.add(outcome)
+        self.teams[team] = self.teams.get(team, Record()).add(outcome)
+
+    def to_json(self) -> dict[str, Any]:
+        return dict(
+            name=self.name,
+            teams=self.teams,
+            overall=self.overall,
+        )
+
+
+@dataclass
 class OtherTeamRecord:
     name: str
     pitchers: dict[str, Record] = field(default_factory=dict)
@@ -43,14 +61,18 @@ class OtherTeamRecord:
 class TeamRecord:
     name: str
     others: dict[str, OtherTeamRecord] = field(default_factory=dict)
-    pitchers: dict[str, Record] = field(default_factory=dict)
+    pitchers: dict[str, PitcherRecord] = field(default_factory=dict)
     weather: dict[str, Record] = field(default_factory=dict)
     stadia: dict[str, Record] = field(default_factory=dict)
     overall: Record = Record()
 
     def record_game(self, pitcher: str, weather: str, stadium: str, team_id: str, team_pitcher: str, outcome: Record) -> None:
+        team = TEAMS[team_id]
+
         self.overall = self.overall.add(outcome)
-        self.pitchers[pitcher] = self.pitchers.get(pitcher, Record()).add(outcome)
+        if pitcher not in self.pitchers:
+            self.pitchers[pitcher] = PitcherRecord(name=pitcher)
+        self.pitchers[pitcher].record_game(team=team, outcome=outcome)
         self.weather[weather] = self.weather.get(weather, Record()).add(outcome)
         self.stadia[stadium] = self.stadia.get(stadium, Record()).add(outcome)
         if team_id not in self.others:
@@ -61,7 +83,10 @@ class TeamRecord:
         return dict(
             name=self.name,
             overall=self.overall,
-            pitchers=self.pitchers,
+            pitchers={
+                pitcher: pitcher_record.to_json()
+                for pitcher, pitcher_record in self.pitchers.items()
+            },
             weather=self.weather,
             stadia=self.stadia,
             others={

@@ -155,6 +155,12 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 f"{_to_stars(metadata['before'])} -> ",
                 (_to_stars(metadata["after"]), "red"),
             )
+        elif entry["type"] == 122:
+            # Superallergic reaction
+            changes = Text.assemble(
+                f"{_to_stars(metadata['before'])} -> ",
+                (_to_stars(metadata["after"]), "red"),
+            )
         elif entry["type"] == 127:
             # Player item added
             item = _item_stars(metadata["playerItemRatingAfter"])
@@ -279,6 +285,12 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 188:
             # Player item is repaired
             changes = _item_durability(metadata)
+        elif entry["type"] == 199:
+            # Player Soul restored
+            changes = Text.assemble(
+                f"{metadata['before']} -> ",
+                (str(metadata["after"]), "green"),
+            )
 
         table.add_row(day, description, changes)
 

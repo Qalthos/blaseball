@@ -18,6 +18,14 @@ ITEM_MOD = "bababa"
 GAIN = Text("+", style="green")
 LOSE = Text("-", style="red")
 
+STAT_TYPE = [
+    "0",
+    "1",
+    "Defense",
+    "Baserunning",
+    "Overall",
+]
+
 NO_CHANGE = [
     2,  # Inning half announcement
     7,  # Flyout
@@ -107,6 +115,9 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             # Player added to team
             location = Locations(metadata["location"]).name
             changes = f"{location}: +{metadata['playerName']}"
+        elif entry["type"] == 112:
+            # Player removed from team
+            changes = f"{metadata['teamName']}: -{metadata['playerName']}"
         elif entry["type"] == 113:
             # Exchange players between teams
             location_a = Locations(metadata["aLocation"]).name
@@ -145,14 +156,16 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 117:
             # Player stars increased
+            block = STAT_TYPE[metadata["type"]]
             changes = Text.assemble(
-                f"{_to_stars(metadata['before'])} -> ",
+                f"{block}: {_to_stars(metadata['before'])} -> ",
                 (_to_stars(metadata["after"]), "green"),
             )
         elif entry["type"] == 118:
             # Player stars decreased
+            block = STAT_TYPE[metadata["type"]]
             changes = Text.assemble(
-                f"{_to_stars(metadata['before'])} -> ",
+                f"{block}: {_to_stars(metadata['before'])} -> ",
                 (_to_stars(metadata["after"]), "red"),
             )
         elif entry["type"] == 122:
@@ -197,6 +210,12 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 (metadata["from"], mod_type),
                 " -> ",
                 (metadata["to"], mod_type),
+            )
+        elif entry["type"] == 145:
+            # Alternate called
+            changes = (
+                f"{_to_stars(metadata['before'])} -> "
+                f"{_to_stars(metadata['after'])}"
             )
         elif entry["type"] == 146:
             # Modifier added by source
@@ -287,6 +306,12 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             changes = _item_durability(metadata)
         elif entry["type"] == 199:
             # Player Soul restored
+            changes = Text.assemble(
+                f"{metadata['before']} -> ",
+                (str(metadata["after"]), "green"),
+            )
+        elif entry["type"] == 206:
+            # Hype building
             changes = Text.assemble(
                 f"{metadata['before']} -> ",
                 (str(metadata["after"]), "green"),

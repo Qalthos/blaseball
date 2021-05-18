@@ -101,9 +101,6 @@ def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Tex
 
     for game in games_data.tomorrowSchedule:
         game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")
-        if leagues:
-            game_text.append(f"{leagues.get_team(game.awayTeam).state}\n")
-            game_text.append(f"{leagues.get_team(game.homeTeam).state}")
         yield Panel(game_text)
 
 

@@ -19,8 +19,8 @@ GAIN = Text("+", style="green")
 LOSE = Text("-", style="red")
 
 STAT_TYPE = [
-    "0",
-    "1",
+    "Batting",
+    "Pitching",
     "Defense",
     "Baserunning",
     "Combined",

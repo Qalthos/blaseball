@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Generator
+from typing import Generator, Optional
 
 from blaseball_mike.events import stream_events
 from rich.columns import Columns
@@ -13,7 +13,9 @@ from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
-from models.live import SimData, StreamData
+from models.game import GamesData, SimData
+from models.league import LeagueData
+from models.live import StreamData
 
 
 def phase_time(sim: SimData) -> tuple[str, int, int]:
@@ -81,29 +83,28 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
     return phase, current, total
 
 
-def games(stream_data: StreamData) -> Generator[Text, None, None]:
-    if stream_data.games:
-        for game in stream_data.games.schedule:
-            if game.gameComplete:
-                continue
-            grid = Table.grid(expand=True)
-            grid.add_column()
-            grid.add_column(justify="right", width=4)
-            grid.add_row(game.awayTeamName, str(game.awayScore))
-            grid.add_row("at", "to")
-            grid.add_row(game.homeTeamName, str(game.homeScore))
+def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Text, None, None]:
+    for game in sorted(games_data.schedule, key=lambda x: x.id):
+        if game.gameComplete:
+            continue
+        grid = Table.grid(expand=True)
+        grid.add_column()
+        grid.add_column(justify="right", width=4)
+        grid.add_row(game.awayTeamName, str(game.awayScore))
+        grid.add_row("at", "to")
+        grid.add_row(game.homeTeamName, str(game.homeScore))
 
-            extra = Text()
-            if stream_data.leagues:
-                extra.append(f"{stream_data.leagues.get_stadium(game.stadiumId).state}")
-            yield Panel(RenderGroup(grid, extra))
+        extra = Text()
+        if leagues:
+            extra.append(f"{leagues.get_stadium(game.stadiumId).state}")
+        yield Panel(RenderGroup(grid, extra))
 
-        for game in stream_data.games.tomorrowSchedule:
-            game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")
-            if stream_data.leagues:
-                game_text.append(f"{stream_data.leagues.get_team(game.awayTeam).state}\n")
-                game_text.append(f"{stream_data.leagues.get_team(game.homeTeam).state}")
-            yield Panel(game_text)
+    for game in games_data.tomorrowSchedule:
+        game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")
+        if leagues:
+            game_text.append(f"{leagues.get_team(game.awayTeam).state}\n")
+            game_text.append(f"{leagues.get_team(game.homeTeam).state}")
+        yield Panel(game_text)
 
 
 async def main() -> None:
@@ -126,12 +127,14 @@ async def main() -> None:
     layout["games"].update(Text())
     layout["progress"].update(chest_progress)
 
+    leagues = None
     with Live(layout, auto_refresh=False) as live:
         async for event in stream_events():
             stream_data = StreamData.parse_obj(event)
 
             if stream_data.leagues:
-                chest_stats = stream_data.leagues.stats.communityChest
+                leagues = stream_data.leagues
+                chest_stats = leagues.stats.communityChest
                 chest_progress.update(chest, completed=float(chest_stats.runs))
 
             if stream_data.games:
@@ -143,9 +146,7 @@ async def main() -> None:
                     total=total,
                 )
 
-                layout["games"].update(Columns(games(stream_data), equal=True, expand=True))
-                print(list(games(stream_data)))
-                # layout["games"].update(RenderGroup(*games(stream_data)))
+                layout["games"].update(Columns(games(stream_data.games, leagues), equal=True, expand=True))
 
             live.refresh()
 

@@ -23,7 +23,7 @@ STAT_TYPE = [
     "1",
     "Defense",
     "Baserunning",
-    "Overall",
+    "Combined",
 ]
 
 NO_CHANGE = [
@@ -43,6 +43,7 @@ NO_CHANGE = [
     60,  # Blessing won
     70,  # Grind Rail trick
     125,  # Entering the Hall
+    126,  # Exiting the Hall
     131,  # Reverb lineup shuffle
     132,  # Reverb rotation shuffle
     137,  # New player hatching
@@ -313,8 +314,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 206:
             # Hype building
             changes = Text.assemble(
-                f"{metadata['before']} -> ",
-                (str(metadata["after"]), "green"),
+                f"{metadata['before']:0.2f} -> ",
+                (f"{metadata['after']:0.2f}", "green"),
             )
 
         table.add_row(day, description, changes)

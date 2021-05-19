@@ -102,7 +102,8 @@ def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Tex
         grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
         grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
 
-        yield Panel(grid)
+        update = f"\n{game.lastUpdate}"
+        yield Panel(RenderGroup(grid, update), width=30)
 
     for game in games_data.tomorrowSchedule:
         game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")

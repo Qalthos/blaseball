@@ -14,7 +14,7 @@ from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
-from models.game import GamesData, SimData
+from models.game import Game, SimData
 from models.league import LeagueData
 from models.live import StreamData
 
@@ -84,14 +84,16 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
     return phase, current, total
 
 
-def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Text, None, None]:
-    for game in sorted(games_data.schedule, key=lambda x: x.homeOdds * x.awayOdds):
-        inning = f"{game.inning + 1:X}"
+def games(games_data: list[Game], leagues: Optional[LeagueData]) -> Generator[Panel, None, None]:
+    for game in sorted(games_data, key=lambda x: x.homeOdds * x.awayOdds):
         if game.shame:
-            inning += " SHAME"
+            inning = "[#800878]SHAME"
         elif game.gameComplete:
-            inning += " [red]FINAL"
+            inning = "[red]FINAL"
         else:
+            inning = "[green]LIVE"
+        inning += f" - {game.inning + 1:X}"
+        if not game.gameComplete:
             inning += "▲" if game.topOfInning else "▼"
         weather = Weather(game.weather).text
 
@@ -102,12 +104,19 @@ def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Tex
         grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
         grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
 
-        update = f"\n{game.lastUpdate}"
-        yield Panel(RenderGroup(grid, update), width=30)
+        update = "\n"
+        if game.gameComplete:
+            update += "\n".join(game.outcomes)
+        else:
+            update += game.lastUpdate
 
-    for game in games_data.tomorrowSchedule:
-        game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")
-        yield Panel(game_text)
+        if not update.strip():
+            yield Panel(grid, width=30)
+        else:
+            style = "none"
+            if update.endswith("scores!") or update.endswith("home run!"):
+                style = "yellow"
+            yield Panel(RenderGroup(grid, update), width=30, border_style=style)
 
 
 async def main() -> None:
@@ -149,7 +158,7 @@ async def main() -> None:
                     total=total,
                 )
 
-                layout["games"].update(Columns(games(stream_data.games, leagues), equal=True, expand=True))
+                layout["games"].update(Columns(games(stream_data.games.schedule, leagues), equal=True, expand=True))
 
             live.refresh()
 

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Generator, Optional
 
 from blaseball_mike.events import stream_events
+from blaseball_mike.tables import Weather
 from rich.columns import Columns
 from rich.console import RenderGroup
 from rich.layout import Layout
@@ -84,20 +85,24 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 
 
 def games(games_data: GamesData, leagues: Optional[LeagueData]) -> Generator[Text, None, None]:
-    for game in sorted(games_data.schedule, key=lambda x: x.id):
-        if game.gameComplete:
-            continue
+    for game in sorted(games_data.schedule, key=lambda x: x.homeOdds * x.awayOdds):
+        inning = f"{game.inning + 1:X}"
+        if game.shame:
+            inning += " SHAME"
+        elif game.gameComplete:
+            inning += " [red]FINAL"
+        else:
+            inning += "▲" if game.topOfInning else "▼"
+        weather = Weather(game.weather).text
+
         grid = Table.grid(expand=True)
         grid.add_column()
-        grid.add_column(justify="right", width=4)
-        grid.add_row(game.awayTeamName, str(game.awayScore))
-        grid.add_row("at", "to")
-        grid.add_row(game.homeTeamName, str(game.homeScore))
+        grid.add_column(justify="right")
+        grid.add_row(inning, weather)
+        grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
+        grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
 
-        extra = Text()
-        if leagues:
-            extra.append(f"{leagues.get_stadium(game.stadiumId).state}")
-        yield Panel(RenderGroup(grid, extra))
+        yield Panel(grid)
 
     for game in games_data.tomorrowSchedule:
         game_text = Text(f"{game.awayTeamName}\nat\n{game.homeTeamName}\n")

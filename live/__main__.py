@@ -84,8 +84,83 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
     return phase, current, total
 
 
-def games(games_data: list[Game], leagues: Optional[LeagueData]) -> Generator[Panel, None, None]:
-    for game in sorted(games_data, key=lambda x: x.homeOdds * x.awayOdds):
+def big_game(game: Game) -> Panel:
+    if game.shame:
+        inning = "[#800878]SHAME"
+    elif game.gameComplete:
+        inning = "[red]FINAL"
+    else:
+        inning = "[green]LIVE"
+    inning += f" - {game.inning + 1:X}"
+    if not game.gameComplete:
+        inning += "▲" if game.topOfInning else "▼"
+    weather = Weather(game.weather).text
+    series = f"{game.seriesIndex} of {game.seriesLength}"
+
+    info = Table.grid(expand=True)
+    info.add_column()
+    info.add_column()
+    info.add_column(justify="right")
+
+    info.add_row(inning, weather, series)
+    info.add_row(game.awayTeamName, game.awayPitcherName, f"{game.awayScore:g}")
+    info.add_row(game.homeTeamName, game.homePitcherName, f"{game.homeScore:g}")
+
+    if game.topOfInning:
+        totalBalls = game.awayBalls
+        totalStrikes = game.awayStrikes
+        totalOuts = game.awayOuts
+        totalBases = game.awayBases
+        batter = game.awayBatterName
+    else:
+        totalBalls = game.homeBalls
+        totalStrikes = game.homeStrikes
+        totalOuts = game.homeOuts
+        totalBases = game.homeBases
+        batter = game.homeBatterName
+
+    runners = ["", "", "", ""]
+    for base, runner in zip(game.basesOccupied, game.baseRunnerNames):
+        runners[base] = runner
+
+    state = Table.grid(expand=True)
+    state.add_column(width=5)
+    state.add_column(ratio=1, justify="right")
+    state.add_column(ratio=1)
+    state.add_row(
+        f"B {'●' * game.atBatBalls}{'○' * (totalBalls - game.atBatBalls - 1)}",
+        f"{runners[2]} 3",
+        f"2 {runners[1]}",
+    )
+    state.add_row(
+        f"S {'●' * game.atBatStrikes}{'○' * (totalStrikes - game.atBatStrikes - 1)}",
+        f"{runners[3]} 4" if totalBases >= 5 else "",
+        f"1 {runners[0]}",
+    )
+    state.add_row(
+        f"O {'●' * game.halfInningOuts}{'○' * (totalOuts - game.halfInningOuts - 1)}",
+        "SECRET 🔒" if game.secretBaserunner else "🔒",
+        f"🏏 {batter}",
+    )
+
+    update = "\n"
+    if game.gameComplete:
+        update += "\n".join(game.outcomes)
+    else:
+        update += game.lastUpdate
+
+    style = "none"
+    if update.endswith("scores!") or update.endswith("home run!"):
+        style = "yellow"
+    return Panel(
+        RenderGroup(info, "", state, update),
+        width=60,
+        border_style=style,
+    )
+
+
+def games(games: list[Game], leagues: Optional[LeagueData]) -> Generator[Panel, None, None]:
+    for game in games:
         if game.shame:
             inning = "[#800878]SHAME"
         elif game.gameComplete:
@@ -153,12 +228,23 @@ async def main() -> None:
                 phase_name, completed, total = phase_time(stream_data.games.sim)
                 phase_progress.update(
                     phase,
-                    description=phase_name,
+                    description=f"{phase_name} Day {stream_data.games.sim.day + 1}",
                     completed=completed,
                     total=total,
                 )
 
-                layout["games"].update(Columns(games(stream_data.games.schedule, leagues), equal=True, expand=True))
+                today = sorted(
+                    stream_data.games.schedule,
+                    key=lambda x: x.homeOdds * x.awayOdds
+                )
+                try:
+                    mechanics = stream_data.games.get_team_today("Mechanics")
+                    # Reposition followed team to the front
+                    today.remove(mechanics)
+                    today.insert(0, mechanics)
+                    layout["games"].update(Columns(big_game(game) for game in today))
+                except ValueError:
+                    layout["games"].update(Columns(games(today, leagues), equal=True, expand=True))
 
             live.refresh()
 

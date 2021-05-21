@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Generator, Optional
+from typing import Generator
 
 from blaseball_mike.events import stream_events
 from blaseball_mike.tables import Weather
@@ -15,8 +15,40 @@ from rich.table import Table
 from rich.text import Text
 
 from models.game import Game, SimData
-from models.league import LeagueData
 from models.live import StreamData
+
+
+def inning(game: Game) -> Text:
+    if not game.gameStart:
+        style = "#9a9531"
+        inning = "UPCOMING"
+    else:
+        if game.shame:
+            style = "#800878"
+            inning = "SHAME"
+        elif game.gameComplete:
+            style = "red"
+            inning = "FINAL"
+        else:
+            style = "green"
+            inning = "LIVE"
+
+        inning += f" - {game.inning + 1:X}"
+        if not game.gameComplete:
+            inning += "▲" if game.topOfInning else "▼"
+
+    return Text.assemble(
+        (inning, style),
+        "",
+    )
+
+
+def highlight(game: Game) -> str:
+    style = "none"
+    if game.lastUpdate.endswith("scores!") or game.lastUpdate.endswith("home run!") or game.lastUpdate.endswith("Run!"):
+        style = "yellow"
+
+    return style
 
 
 def phase_time(sim: SimData) -> tuple[str, int, int]:
@@ -85,15 +117,6 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 
 
 def big_game(game: Game) -> Panel:
-    if game.shame:
-        inning = "[#800878]SHAME"
-    elif game.gameComplete:
-        inning = "[red]FINAL"
-    else:
-        inning = "[green]LIVE"
-    inning += f" - {game.inning + 1:X}"
-    if not game.gameComplete:
-        inning += "▲" if game.topOfInning else "▼"
     weather = Weather(game.weather).text
     series = f"{game.seriesIndex} of {game.seriesLength}"
 
@@ -102,7 +125,7 @@ def big_game(game: Game) -> Panel:
     info.add_column()
     info.add_column(justify="right")
 
-    info.add_row(inning, weather, series)
+    info.add_row(inning(game), weather, series)
     info.add_row(game.awayTeamName, game.awayPitcherName, f"{game.awayScore:g}")
     info.add_row(game.homeTeamName, game.homePitcherName, f"{game.homeScore:g}")
 
@@ -149,9 +172,7 @@ def big_game(game: Game) -> Panel:
     else:
         update += game.lastUpdate
 
-    style = "none"
-    if update.endswith("scores!") or update.endswith("home run!"):
-        style = "yellow"
+    style = highlight(game)
     return Panel(
         RenderGroup(info, "", state, update),
         width=60,
@@ -159,39 +180,35 @@ def big_game(game: Game) -> Panel:
     )
 
 
-def games(games: list[Game], leagues: Optional[LeagueData]) -> Generator[Panel, None, None]:
+def little_game(game: Game) -> Panel:
+    weather = Weather(game.weather).text
+
+    grid = Table.grid(expand=True)
+    grid.add_column()
+    grid.add_column(justify="right")
+    grid.add_row(inning(game), weather)
+    grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
+    grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
+
+    update = "\n"
+    if game.gameComplete:
+        update += "\n".join(game.outcomes)
+    else:
+        update += game.lastUpdate
+
+    if not update.strip():
+        return Panel(grid, width=30)
+    else:
+        style = highlight(game)
+        return Panel(RenderGroup(grid, update), width=30, border_style=style)
+
+
+def games(games: list[Game]) -> Generator[Panel, None, None]:
     for game in games:
-        if game.shame:
-            inning = "[#800878]SHAME"
-        elif game.gameComplete:
-            inning = "[red]FINAL"
+        if not game.gameStart or game.gameComplete:
+            yield little_game(game)
         else:
-            inning = "[green]LIVE"
-        inning += f" - {game.inning + 1:X}"
-        if not game.gameComplete:
-            inning += "▲" if game.topOfInning else "▼"
-        weather = Weather(game.weather).text
-
-        grid = Table.grid(expand=True)
-        grid.add_column()
-        grid.add_column(justify="right")
-        grid.add_row(inning, weather)
-        grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
-        grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
-
-        update = "\n"
-        if game.gameComplete:
-            update += "\n".join(game.outcomes)
-        else:
-            update += game.lastUpdate
-
-        if not update.strip():
-            yield Panel(grid, width=30)
-        else:
-            style = "none"
-            if update.endswith("scores!") or update.endswith("home run!"):
-                style = "yellow"
-            yield Panel(RenderGroup(grid, update), width=30, border_style=style)
+            yield big_game(game)
 
 
 async def main() -> None:
@@ -235,16 +252,17 @@ async def main() -> None:
 
                 today = sorted(
                     stream_data.games.schedule,
-                    key=lambda x: x.homeOdds * x.awayOdds
+                    key=lambda x: x.homeOdds * x.awayOdds + x.gameComplete,
                 )
                 try:
                     mechanics = stream_data.games.get_team_today("Mechanics")
                     # Reposition followed team to the front
                     today.remove(mechanics)
                     today.insert(0, mechanics)
-                    layout["games"].update(Columns(big_game(game) for game in today))
                 except ValueError:
-                    layout["games"].update(Columns(games(today, leagues), equal=True, expand=True))
+                    pass
+
+                layout["games"].update(Columns(games(today), equal=True, expand=True))
 
             live.refresh()
 

@@ -65,6 +65,7 @@ class Division(FixedModel):
 
 class TeamState(FixedModel):
     donatedShame: Optional[float]
+    overflowRuns: Optional[float]
     permModSources: Optional[dict[str, list[str]]]
     gameModSources: Optional[dict[str, list[str]]]
 

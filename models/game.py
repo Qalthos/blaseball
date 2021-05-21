@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from models import FixedModel
+from models.postseason import Postseason
 
 
 class SimData(FixedModel):
@@ -159,7 +160,7 @@ class GamesData(FixedModel):
     standings: Standings
     schedule: list[Game]
     tomorrowSchedule: list[Game]
-    postseason: dict
+    postseason: Postseason
 
     def get_team_today(self, nickname: str) -> Game:
         for game in self.schedule:

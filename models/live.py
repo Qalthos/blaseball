@@ -6,7 +6,9 @@ from models.league import LeagueData
 
 
 class FightData(FixedModel):
-    bossFights: list
+    # Not sure if this is ever gonna get filled, but
+    # cause problems when it does
+    bossFights: list[None]
 
 
 class TemporalValues(FixedModel):

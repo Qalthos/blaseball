@@ -45,11 +45,11 @@ def inning(game: Game) -> Text:
 
 def highlight(game: Game) -> str:
     style = "none"
-    if game.scoreUpdate.endswith("Run scored!"):
+    if "Run" in game.scoreUpdate:
         style = "yellow"
-    if game.scoreUpdate.endswith("Unrun scored!"):
+    elif "Unrun" in game.scoreUpdate:
         style = "red"
-    if game.lastUpdate.endswith("is Partying!"):
+    elif game.lastUpdate.endswith("is Partying!"):
         style = "#ff66f9"
 
     return style

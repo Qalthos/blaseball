@@ -45,8 +45,10 @@ def inning(game: Game) -> Text:
 
 def highlight(game: Game) -> str:
     style = "none"
-    if game.lastUpdate.endswith("scores!") or game.lastUpdate.endswith("home run!") or game.lastUpdate.endswith("Run!"):
+    if "scores!" in game.lastUpdate or "home run!" in game.lastUpdate:
         style = "yellow"
+    if game.lastUpdate.endswith("is Partying!"):
+        style = "#ff66f9"
 
     return style
 
@@ -203,7 +205,7 @@ def little_game(game: Game) -> Panel:
         return Panel(RenderGroup(grid, update), width=30, border_style=style)
 
 
-def games(games: list[Game]) -> Generator[Panel, None, None]:
+def render_games(games: list[Game]) -> Generator[Panel, None, None]:
     for game in games:
         if not game.gameStart or game.gameComplete:
             yield little_game(game)
@@ -236,35 +238,37 @@ async def main() -> None:
         async for event in stream_events():
             stream_data = StreamData.parse_obj(event)
 
-            if stream_data.leagues:
-                leagues = stream_data.leagues
+            if leagues := stream_data.leagues:
                 chest_stats = leagues.stats.communityChest
                 chest_progress.update(chest, completed=float(chest_stats.runs))
 
-            if stream_data.games:
-                phase_name, completed, total = phase_time(stream_data.games.sim)
+            if games := stream_data.games:
+                phase_name, completed, total = phase_time(games.sim)
                 phase_progress.update(
                     phase,
-                    description=f"{phase_name} Day {stream_data.games.sim.day + 1}",
+                    description=f"{phase_name} Day {games.sim.day + 1}",
                     completed=completed,
                     total=total,
                 )
 
                 today = sorted(
-                    stream_data.games.schedule,
+                    games.schedule,
                     key=lambda x: x.homeOdds * x.awayOdds + x.gameComplete,
                 )
                 try:
-                    mechanics = stream_data.games.get_team_today("Mechanics")
+                    mechanics = games.get_team_today("Mechanics")
                     # Reposition followed team to the front
                     today.remove(mechanics)
                     today.insert(0, mechanics)
                 except ValueError:
                     pass
 
-                layout["games"].update(Columns(games(today), equal=True, expand=True))
+                layout["games"].update(
+                    Columns(render_games(today), equal=True, expand=True)
+                )
 
             live.refresh()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -19,13 +19,15 @@ class Playoffs(FixedModel):
 class PlayoffRound(FixedModel):
     id: UUID
     gameIndex: int
-    games: list[UUID]
+    # UUIDs, but with 'none' instead of nulls?
+    games: list[list[Optional[str]]]
     matchups: list[UUID]
     name: str
     roundNumber: int
     special: bool
     winnerSeeds: list[int]
-    winners: list[UUID]
+    # UUIDs, but with 'none' instead of nulls?
+    winners: list[Optional[str]]
 
 
 class PlayoffMatchup(FixedModel):
@@ -49,3 +51,9 @@ class Postseason(FixedModel):
     matchups: list[PlayoffMatchup]
     tomorrowRound: PlayoffRound
     tomorrowMatchups: list[PlayoffMatchup]
+
+    def get_matchup(self, matchup_id: UUID) -> PlayoffMatchup:
+        for matchup in self.allMatchups:
+            if matchup.id == matchup_id:
+                return matchup
+        raise ValueError("No matchup with id {matchup_id!s} found.")

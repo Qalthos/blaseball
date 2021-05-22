@@ -45,8 +45,10 @@ def inning(game: Game) -> Text:
 
 def highlight(game: Game) -> str:
     style = "none"
-    if "scores!" in game.lastUpdate or "home run!" in game.lastUpdate:
+    if game.scoreUpdate.endswith("Run scored!"):
         style = "yellow"
+    if game.scoreUpdate.endswith("Unrun scored!"):
+        style = "red"
     if game.lastUpdate.endswith("is Partying!"):
         style = "#ff66f9"
 
@@ -173,6 +175,15 @@ def big_game(game: Game) -> Panel:
         update += "\n".join(game.outcomes)
     else:
         update += game.lastUpdate
+    if game.scoreLedger:
+        update += f"\n{game.scoreLedger}"
+    if game.scoreUpdate:
+        color = ""
+        if "Run" in game.scoreUpdate:
+            color = "[yellow]"
+        elif "Unrun" in game.scoreUpdate:
+            color = "[red]"
+        update += f" {color}{game.scoreUpdate}"
 
     style = highlight(game)
     return Panel(

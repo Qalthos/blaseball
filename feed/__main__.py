@@ -27,6 +27,7 @@ STAT_TYPE = [
 ]
 
 NO_CHANGE = [
+    -1,  # Redacted
     2,  # Inning half announcement
     7,  # Flyout
     8,  # Ground out

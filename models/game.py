@@ -60,7 +60,7 @@ class Standings(FixedModel):
     runs: dict[UUID, int]
 
 
-class Item(FixedModel):
+class Prize(FixedModel):
     itemId: UUID
     itemName: str
     winner: Optional[UUID]
@@ -68,7 +68,7 @@ class Item(FixedModel):
 
 class GameState(FixedModel):
     holidayInning: Optional[bool]
-    prizeMatch: Optional[Item]
+    prizeMatch: Optional[Prize]
 
 
 class Game(FixedModel):

@@ -152,6 +152,7 @@ class Game(FixedModel):
     isTitleMatch: bool
     queuedEvents: list[str]
     state: GameState
+    endPhase: int
 
 
 class GamesData(FixedModel):

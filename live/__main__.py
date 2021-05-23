@@ -17,6 +17,9 @@ from rich.text import Text
 from models.game import Game, SimData
 from models.live import StreamData
 
+TEAM_URL = "https://www.blaseball.com/team"
+PLAYER_URL = "https://www.blaseball.com/player"
+
 
 def inning(game: Game) -> Text:
     if not game.gameStart:
@@ -122,7 +125,10 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 
 def big_game(game: Game) -> Panel:
     weather = Weather(game.weather).text
-    series = f"{game.seriesIndex} of {game.seriesLength}"
+    if game.isPostseason:
+        series = f"First to {game.seriesLength}"
+    else:
+        series = f"{game.seriesIndex} of {game.seriesLength}"
 
     info = Table.grid(expand=True)
     info.add_column()
@@ -130,25 +136,33 @@ def big_game(game: Game) -> Panel:
     info.add_column(justify="right")
 
     info.add_row(inning(game), weather, series)
-    info.add_row(game.awayTeamName, game.awayPitcherName, f"{game.awayScore:g}")
-    info.add_row(game.homeTeamName, game.homePitcherName, f"{game.homeScore:g}")
+    info.add_row(
+        f"[link={TEAM_URL}/{game.awayTeam!s}]{game.awayTeamName}",
+        f"[link={PLAYER_URL}/{game.awayPitcher!s}]{game.awayPitcherName}",
+        f"{game.awayScore:g}"
+    )
+    info.add_row(
+        f"[link={TEAM_URL}/{game.homeTeam!s}]{game.homeTeamName}",
+        f"[link={PLAYER_URL}/{game.homePitcher!s}]{game.homePitcherName}",
+        f"{game.homeScore:g}"
+    )
 
     if game.topOfInning:
         totalBalls = game.awayBalls
         totalStrikes = game.awayStrikes
         totalOuts = game.awayOuts
         totalBases = game.awayBases
-        batter = game.awayBatterName
+        batter = f"[link={PLAYER_URL}/{game.awayBatter!s}]{game.awayBatterName}"
     else:
         totalBalls = game.homeBalls
         totalStrikes = game.homeStrikes
         totalOuts = game.homeOuts
         totalBases = game.homeBases
-        batter = game.homeBatterName
+        batter = f"[link={PLAYER_URL}/{game.homeBatter!s}]{game.homeBatterName}"
 
     runners = ["", "", "", ""]
-    for base, runner in zip(game.basesOccupied, game.baseRunnerNames):
-        runners[base] = runner
+    for base, runner_id, runner in zip(game.basesOccupied, game.baseRunners, game.baseRunnerNames):
+        runners[base] = f"[link={PLAYER_URL}/{runner_id!s}]{runner}"
 
     state = Table.grid(expand=True)
     state.add_column(width=5)

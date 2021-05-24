@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+from pydantic.color import Color
+
 from models import FixedModel
 from models.postseason import Postseason
 
@@ -18,9 +20,9 @@ class SimData(FixedModel):
     season: int
     seasonId: UUID
     terminology: UUID
-    eraColor: str
+    eraColor: Color
     eraTitle: str
-    subEraColor: str
+    subEraColor: Color
     subEraTitle: str
     attr: list[str]
     agitations: int
@@ -88,7 +90,7 @@ class Game(FixedModel):
     awayTeam: UUID
     awayTeamName: str
     awayTeamNickname: str
-    awayTeamColor: str
+    awayTeamColor: Color
     awayTeamEmoji: str
     awayOdds: float
     awayStrikes: int
@@ -101,7 +103,7 @@ class Game(FixedModel):
     homeTeam: UUID
     homeTeamName: str
     homeTeamNickname: str
-    homeTeamColor: str
+    homeTeamColor: Color
     homeTeamEmoji: str
     homeOdds: float
     homeStrikes: int
@@ -128,8 +130,8 @@ class Game(FixedModel):
     homeBases: int
     awayBases: int
     repeatCount: int
-    awayTeamSecondaryColor: str
-    homeTeamSecondaryColor: str
+    awayTeamSecondaryColor: Color
+    homeTeamSecondaryColor: Color
     homeBalls: int
     awayBalls: int
     homeOuts: int

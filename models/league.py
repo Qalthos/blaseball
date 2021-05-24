@@ -1,6 +1,8 @@
 from typing import Optional
 from uuid import UUID
 
+from pydantic.color import Color
+
 from models import FixedModel
 
 
@@ -26,9 +28,9 @@ class Stadium(FixedModel):
     name: str
     nickname: str
     model: int
-    mainColor: str
-    secondaryColor: str
-    tertiaryColor: str
+    mainColor: Color
+    secondaryColor: Color
+    tertiaryColor: Color
     ominousness: float
     forwardness: float
     obtuseness: float
@@ -79,8 +81,8 @@ class Team(FixedModel):
     fullName: str
     nickname: str
     location: str
-    mainColor: str
-    secondaryColor: str
+    mainColor: Color
+    secondaryColor: Color
     shorthand: str
     emoji: str
     slogan: str

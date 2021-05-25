@@ -22,14 +22,14 @@ PLAYER_URL = "https://www.blaseball.com/player"
 
 
 def inning(game: Game) -> Text:
-    if not game.gameStart:
+    if not game.game_start:
         style = "#9a9531"
         inning = "UPCOMING"
     else:
         if game.shame:
             style = "#800878"
             inning = "SHAME"
-        elif game.gameComplete:
+        elif game.game_complete:
             style = "red"
             inning = "FINAL"
         else:
@@ -37,8 +37,8 @@ def inning(game: Game) -> Text:
             inning = "LIVE"
 
         inning += f" - {game.inning + 1:X}"
-        if not game.gameComplete:
-            inning += "▲" if game.topOfInning else "▼"
+        if not game.game_complete:
+            inning += "▲" if game.top_of_inning else "▼"
 
     return Text.assemble(
         (inning, style),
@@ -48,11 +48,11 @@ def inning(game: Game) -> Text:
 
 def highlight(game: Game) -> str:
     style = "none"
-    if "Run" in game.scoreUpdate:
+    if "Run" in game.score_update:
         style = "yellow"
-    elif "Unrun" in game.scoreUpdate:
+    elif "Unrun" in game.score_update:
         style = "red"
-    elif game.lastUpdate.endswith("is Partying!"):
+    elif game.last_update.endswith("is Partying!"):
         style = "#ff66f9"
 
     return style
@@ -61,60 +61,60 @@ def highlight(game: Game) -> str:
 def phase_time(sim: SimData) -> tuple[str, int, int]:
     if sim.phase == 0:
         phase = "Rest"
-        start = sim.godsDayDate
-        end = sim.preseasonDate
+        start = sim.gods_day_date
+        end = sim.preseason_date
     elif sim.phase == 1:
         phase = "Earlseason"
-        start = sim.preseasonDate
-        end = sim.earlseasonDate
+        start = sim.preseason_date
+        end = sim.earlseason_date
     elif sim.phase == 2:
         phase = "Earlseason"
-        start = sim.earlseasonDate
-        end = sim.earlsiestaDate
+        start = sim.earlseason_date
+        end = sim.earlsiesta_date
     elif sim.phase == 3:
         phase = "Earlsiesta"
-        start = sim.earlsiestaDate
-        end = sim.midseasonDate
+        start = sim.earlsiesta_date
+        end = sim.midseason_date
     elif sim.phase == 4:
         phase = "Midseason"
-        start = sim.midseasonDate
-        end = sim.latesiestaDate
+        start = sim.midseason_date
+        end = sim.latesiesta_date
     elif sim.phase == 5:
         phase = "Latesiesta"
-        start = sim.latesiestaDate
-        end = sim.lateseasonDate
+        start = sim.latesiesta_date
+        end = sim.lateseason_date
     elif sim.phase == 6:
         phase = "Lateseason"
-        start = sim.lateseasonDate
-        end = sim.endseasonDate
+        start = sim.lateseason_date
+        end = sim.endseason_date
     elif sim.phase == 7:
         phase = "Endseason"
-        start = sim.endseasonDate
-        end = sim.earlpostseasonDate
+        start = sim.endseason_date
+        end = sim.earlpostseason_date
     elif sim.phase == 8:
         phase = "Prepostseason"
-        start = sim.endseasonDate
-        end = sim.earlpostseasonDate
+        start = sim.endseason_date
+        end = sim.earlpostseason_date
     elif sim.phase == 9:
         phase = "Earlpostseason"
-        end = sim.earlpostseasonDate
-        start = sim.latepostseasonDate
+        end = sim.earlpostseason_date
+        start = sim.latepostseason_date
     elif sim.phase == 10:
         phase = "Postearlpostseason"
-        start = sim.earlpostseasonDate
-        end = sim.latepostseasonDate
+        start = sim.earlpostseason_date
+        end = sim.latepostseason_date
     elif sim.phase == 11:
         phase = "Latepostseason"
-        start = sim.latepostseasonDate
-        end = sim.electionDate
+        start = sim.latepostseason_date
+        end = sim.election_date
     elif sim.phase == 12:
         phase = "Postpostseason"
-        start = sim.latepostseasonDate
-        end = sim.electionDate
+        start = sim.latepostseason_date
+        end = sim.election_date
     elif sim.phase == 13:
         phase = "Election"
-        start = sim.electionDate
-        end = sim.godsDayDate + timedelta(days=7)
+        start = sim.election_date
+        end = sim.gods_day_date + timedelta(days=7)
     else:
         raise Exception(f"Not sure what phase {sim.phase} is")
     now = datetime.now(tz=timezone.utc)
@@ -125,10 +125,10 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 
 def big_game(game: Game) -> Panel:
     weather = Weather(game.weather).text
-    if game.isPostseason:
-        series = f"First to {game.seriesLength}"
+    if game.is_postseason:
+        series = f"First to {game.series_length}"
     else:
-        series = f"{game.seriesIndex} of {game.seriesLength}"
+        series = f"{game.series_index} of {game.series_length}"
 
     info = Table.grid(expand=True)
     info.add_column()
@@ -137,31 +137,31 @@ def big_game(game: Game) -> Panel:
 
     info.add_row(inning(game), weather, series)
     info.add_row(
-        f"[link={TEAM_URL}/{game.awayTeam!s}]{game.awayTeamName}",
-        f"[link={PLAYER_URL}/{game.awayPitcher!s}]{game.awayPitcherName}",
-        f"{game.awayScore:g}"
+        f"[link={TEAM_URL}/{game.away_team!s}]{game.away_team_name}",
+        f"[link={PLAYER_URL}/{game.away_pitcher!s}]{game.away_pitcher_name}",
+        f"{game.away_score:g}"
     )
     info.add_row(
-        f"[link={TEAM_URL}/{game.homeTeam!s}]{game.homeTeamName}",
-        f"[link={PLAYER_URL}/{game.homePitcher!s}]{game.homePitcherName}",
-        f"{game.homeScore:g}"
+        f"[link={TEAM_URL}/{game.home_team!s}]{game.home_team_name}",
+        f"[link={PLAYER_URL}/{game.home_pitcher!s}]{game.home_pitcher_name}",
+        f"{game.home_score:g}"
     )
 
-    if game.topOfInning:
-        totalBalls = game.awayBalls
-        totalStrikes = game.awayStrikes
-        totalOuts = game.awayOuts
-        totalBases = game.awayBases
-        batter = f"[link={PLAYER_URL}/{game.awayBatter!s}]{game.awayBatterName}"
+    if game.top_of_inning:
+        total_balls = game.away_balls
+        total_strikes = game.away_strikes
+        total_outs = game.away_outs
+        total_bases = game.away_bases
+        batter = f"[link={PLAYER_URL}/{game.away_batter!s}]{game.away_batter_name}"
     else:
-        totalBalls = game.homeBalls
-        totalStrikes = game.homeStrikes
-        totalOuts = game.homeOuts
-        totalBases = game.homeBases
-        batter = f"[link={PLAYER_URL}/{game.homeBatter!s}]{game.homeBatterName}"
+        total_balls = game.home_balls
+        total_strikes = game.home_strikes
+        total_outs = game.home_outs
+        total_bases = game.home_bases
+        batter = f"[link={PLAYER_URL}/{game.home_batter!s}]{game.home_batter_name}"
 
     runners = ["", "", "", ""]
-    for base, runner_id, runner in zip(game.basesOccupied, game.baseRunners, game.baseRunnerNames):
+    for base, runner_id, runner in zip(game.bases_occupied, game.base_runners, game.base_runner_names):
         runners[base] = f"[link={PLAYER_URL}/{runner_id!s}]{runner}"
 
     state = Table.grid(expand=True)
@@ -169,35 +169,35 @@ def big_game(game: Game) -> Panel:
     state.add_column(ratio=1, justify="right")
     state.add_column(ratio=1)
     state.add_row(
-        f"B {'●' * game.atBatBalls}{'○' * (totalBalls - game.atBatBalls - 1)}",
+        f"B {'●' * game.at_bat_balls}{'○' * (total_balls - game.at_bat_balls - 1)}",
         f"{runners[2]} 3",
         f"2 {runners[1]}",
     )
     state.add_row(
-        f"S {'●' * game.atBatStrikes}{'○' * (totalStrikes - game.atBatStrikes - 1)}",
-        f"{runners[3]} 4" if totalBases >= 5 else "",
+        f"S {'●' * game.at_bat_strikes}{'○' * (total_strikes - game.at_bat_strikes - 1)}",
+        f"{runners[3]} 4" if total_bases >= 5 else "",
         f"1 {runners[0]}",
     )
     state.add_row(
-        f"O {'●' * game.halfInningOuts}{'○' * (totalOuts - game.halfInningOuts - 1)}",
-        "SECRET 🔒" if game.secretBaserunner else "🔒",
+        f"O {'●' * game.half_inning_outs}{'○' * (total_outs - game.half_inning_outs - 1)}",
+        "SECRET 🔒" if game.secret_baserunner else "🔒",
         f"🏏 {batter}",
     )
 
     update = "\n"
-    if game.gameComplete:
+    if game.game_complete:
         update += "\n".join(game.outcomes)
     else:
-        update += game.lastUpdate
-    if game.scoreLedger:
-        update += f"\n{game.scoreLedger}"
-    if game.scoreUpdate:
+        update += game.last_update
+    if game.score_ledger:
+        update += f"\n{game.score_ledger}"
+    if game.score_update:
         color = ""
-        if "Run" in game.scoreUpdate:
+        if "Run" in game.score_update:
             color = "[yellow]"
-        elif "Unrun" in game.scoreUpdate:
+        elif "Unrun" in game.score_update:
             color = "[red]"
-        update += f" {color}{game.scoreUpdate}"
+        update += f" {color}{game.score_update}"
 
     style = highlight(game)
     return Panel(
@@ -214,14 +214,14 @@ def little_game(game: Game) -> Panel:
     grid.add_column()
     grid.add_column(justify="right")
     grid.add_row(inning(game), weather)
-    grid.add_row(game.awayTeamNickname, f"{game.awayScore:g}")
-    grid.add_row(game.homeTeamNickname, f"{game.homeScore:g}")
+    grid.add_row(game.away_team_nickname, f"{game.away_score:g}")
+    grid.add_row(game.home_team_nickname, f"{game.home_score:g}")
 
     update = "\n"
-    if game.gameComplete:
+    if game.game_complete:
         update += "\n".join(game.outcomes)
     else:
-        update += game.lastUpdate
+        update += game.last_update
 
     if not update.strip():
         return Panel(grid, width=30)
@@ -232,7 +232,7 @@ def little_game(game: Game) -> Panel:
 
 def render_games(games: list[Game]) -> Generator[Panel, None, None]:
     for game in games:
-        if not game.gameStart or game.gameComplete:
+        if not game.game_start or game.game_complete:
             yield little_game(game)
         else:
             yield big_game(game)
@@ -264,7 +264,7 @@ async def main() -> None:
             stream_data = StreamData.parse_obj(event)
 
             if leagues := stream_data.leagues:
-                chest_stats = leagues.stats.communityChest
+                chest_stats = leagues.stats.community_chest
                 chest_progress.update(chest, completed=float(chest_stats.runs))
 
             if games := stream_data.games:
@@ -278,7 +278,7 @@ async def main() -> None:
 
                 today = sorted(
                     games.schedule,
-                    key=lambda x: x.homeOdds * x.awayOdds + x.gameComplete,
+                    key=lambda x: x.home_odds * x.away_odds + x.game_complete,
                 )
                 try:
                     mechanics = games.get_team_today("Mechanics")

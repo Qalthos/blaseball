@@ -1,9 +1,8 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic.color import Color
-
 from models import FixedModel
+from models.team import Stadium, Team
 
 
 class League(FixedModel):
@@ -11,46 +10,6 @@ class League(FixedModel):
     subleagues: list[UUID]
     name: str
     tiebreakers: UUID
-
-
-class FaxMachine(FixedModel):
-    runsNeeded: int
-
-
-class StadiumState(FixedModel):
-    faxMachine: Optional[FaxMachine]
-    solarPanels: Optional[bool]
-
-
-class Stadium(FixedModel):
-    id: UUID
-    teamId: UUID
-    name: str
-    nickname: str
-    model: int
-    mainColor: Color
-    secondaryColor: Color
-    tertiaryColor: Color
-    ominousness: float
-    forwardness: float
-    obtuseness: float
-    grandiosity: float
-    fortification: float
-    elongation: float
-    inconvenience: float
-    viscosity: float
-    hype: float
-    mysticism: float
-    luxuriousness: float
-    filthiness: float
-    weather: dict[str, int]
-    renoHand: list[str]
-    renoDiscard: list[str]
-    renoLog: dict[str, int]
-    renoCost: int
-    mods: list[str]
-    birds: int
-    state: StadiumState
 
 
 class Subleague(FixedModel):
@@ -65,62 +24,19 @@ class Division(FixedModel):
     name: str
 
 
-class TeamState(FixedModel):
-    donatedShame: Optional[float]
-    overflowRuns: Optional[float]
-    permModSources: Optional[dict[str, list[str]]]
-    gameModSources: Optional[dict[str, list[str]]]
-
-
-class Team(FixedModel):
-    id: UUID
-    lineup: list[UUID]
-    rotation: list[UUID]
-    bullpen: list[UUID]
-    bench: list[UUID]
-    fullName: str
-    nickname: str
-    location: str
-    mainColor: Color
-    secondaryColor: Color
-    shorthand: str
-    emoji: str
-    slogan: str
-    shameRuns: int
-    totalShames: int
-    totalShamings: int
-    seasonShames: int
-    seasonShamings: int
-    championships: int
-    gameAttr: list[str]
-    weekAttr: list[str]
-    seasAttr: list[str]
-    permAttr: list[str]
-    rotationSlot: int
-    teamSpirit: int
-    card: int
-    tournamentWins: int
-    stadium: Optional[UUID]
-    eDensity: float
-    evolution: int
-    winStreak: int
-    level: Optional[str]
-    state: TeamState
-
-
 class Tiebreakers(FixedModel):
     id: UUID
     order: list[UUID]
 
 
 class CommunityChest(FixedModel):
-    chestsUnlocked: int
+    chests_unlocked: int
     progress: float
     runs: float
 
 
 class LeagueStats(FixedModel):
-    communityChest: CommunityChest
+    community_chest: CommunityChest
 
 
 class LeagueData(FixedModel):

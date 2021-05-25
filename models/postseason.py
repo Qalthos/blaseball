@@ -9,26 +9,24 @@ from models import FixedModel
 class Playoffs(FixedModel):
     id: UUID
     name: str
-    numberOfRounds: int
-    playoffDay: int
+    number_of_rounds: int
+    playoff_day: int
     rounds: list[UUID]
     season: int
-    tomorrowRound: int
+    tomorrow_round: int
     winner: Optional[UUID]
     tournament: int
 
 
 class PlayoffRound(FixedModel):
     id: UUID
-    gameIndex: int
-    # UUIDs, but with 'none' instead of nulls?
+    game_index: int
     games: list[list[Optional[UUID]]]
     matchups: list[UUID]
     name: str
-    roundNumber: int
+    round_number: int
     special: bool
-    winnerSeeds: list[int]
-    # UUIDs, but with 'none' instead of nulls?
+    winner_seeds: list[int]
     winners: list[Optional[UUID]]
 
     @validator("winners", pre=True)
@@ -48,27 +46,27 @@ class PlayoffRound(FixedModel):
 class PlayoffMatchup(FixedModel):
     id: UUID
     name: Optional[str]
-    awaySeed: Optional[int]
-    awayTeam: Optional[UUID]
-    awayWins: int
-    homeSeed: Optional[int]
-    homeTeam: Optional[UUID]
-    homeWins: int
-    gamesPlayed: int
-    gamesNeeded: int
+    away_seed: Optional[int]
+    away_team: Optional[UUID]
+    away_wins: int
+    home_seed: Optional[int]
+    home_team: Optional[UUID]
+    home_wins: int
+    games_played: int
+    games_needed: int
 
 
 class Postseason(FixedModel):
     playoffs: Playoffs
-    allRounds: list[PlayoffRound]
-    allMatchups: list[PlayoffMatchup]
+    all_rounds: list[PlayoffRound]
+    all_matchups: list[PlayoffMatchup]
     round: PlayoffRound
     matchups: list[PlayoffMatchup]
-    tomorrowRound: PlayoffRound
-    tomorrowMatchups: list[PlayoffMatchup]
+    tomorrow_round: PlayoffRound
+    tomorrow_matchups: list[PlayoffMatchup]
 
     def get_matchup(self, matchup_id: UUID) -> PlayoffMatchup:
-        for matchup in self.allMatchups:
+        for matchup in self.all_matchups:
             if matchup.id == matchup_id:
                 return matchup
         raise ValueError("No matchup with id {matchup_id!s} found.")

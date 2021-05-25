@@ -12,34 +12,34 @@ class SimData(FixedModel):
     id: str
     day: int
     league: UUID
-    nextPhaseTime: datetime
+    next_phase_time: datetime
     phase: int
-    playOffRound: int
+    play_off_round: int
     playoffs: UUID
     rules: UUID
     season: int
-    seasonId: UUID
+    season_id: UUID
     terminology: UUID
-    eraColor: Color
-    eraTitle: str
-    subEraColor: Color
-    subEraTitle: str
+    era_color: Color
+    era_title: str
+    sub_era_color: Color
+    sub_era_title: str
     attr: list[str]
     agitations: int
     salutations: int
     tournament: int
-    tournamentRound: int
-    godsDayDate: datetime
-    preseasonDate: datetime
-    earlseasonDate: datetime
-    earlsiestaDate: datetime
-    midseasonDate: datetime
-    latesiestaDate: datetime
-    lateseasonDate: datetime
-    endseasonDate: datetime
-    earlpostseasonDate: datetime
-    latepostseasonDate: datetime
-    electionDate: datetime
+    tournament_round: int
+    gods_day_date: datetime
+    preseason_date: datetime
+    earlseason_date: datetime
+    earlsiesta_date: datetime
+    midseason_date: datetime
+    latesiesta_date: datetime
+    lateseason_date: datetime
+    endseason_date: datetime
+    earlpostseason_date: datetime
+    latepostseason_date: datetime
+    election_date: datetime
     menu: str
 
 
@@ -48,7 +48,7 @@ class SeasonData(FixedModel):
     league: UUID
     rules: UUID
     schedule: UUID
-    seasonNumber: int
+    season_number: int
     standings: UUID
     stats: UUID
     terminology: UUID
@@ -58,103 +58,103 @@ class Standings(FixedModel):
     id: UUID
     losses: dict[UUID, int]
     wins: dict[UUID, int]
-    gamesPlayed: dict[UUID, int]
+    games_played: dict[UUID, int]
     runs: dict[UUID, int]
 
 
 class Prize(FixedModel):
-    itemId: UUID
-    itemName: str
+    item_id: UUID
+    item_name: str
     winner: Optional[UUID]
 
 
 class GameState(FixedModel):
-    holidayInning: Optional[bool]
-    prizeMatch: Optional[Prize]
+    holiday_inning: Optional[bool]
+    prize_match: Optional[Prize]
 
 
 class Game(FixedModel):
     id: UUID
-    basesOccupied: list[int]
-    baseRunners: list[UUID]
-    baseRunnerNames: list[str]
+    bases_occupied: list[int]
+    base_runners: list[UUID]
+    base_runner_names: list[str]
     outcomes: list[str]
     terminology: UUID
-    lastUpdate: str
+    last_update: str
     rules: UUID
     statsheet: UUID
-    awayPitcher: Optional[UUID]
-    awayPitcherName: str
-    awayBatter: Optional[UUID]
-    awayBatterName: str
-    awayTeam: UUID
-    awayTeamName: str
-    awayTeamNickname: str
-    awayTeamColor: Color
-    awayTeamEmoji: str
-    awayOdds: float
-    awayStrikes: int
-    awayScore: float
-    awayTeamBatterCount: int
-    homePitcher: Optional[UUID]
-    homePitcherName: str
-    homeBatter: Optional[UUID]
-    homeBatterName: str
-    homeTeam: UUID
-    homeTeamName: str
-    homeTeamNickname: str
-    homeTeamColor: Color
-    homeTeamEmoji: str
-    homeOdds: float
-    homeStrikes: int
-    homeScore: float
-    homeTeamBatterCount: int
+    away_pitcher: Optional[UUID]
+    away_pitcher_name: str
+    away_batter: Optional[UUID]
+    away_batter_name: str
+    away_team: UUID
+    away_team_name: str
+    away_team_nickname: str
+    away_team_color: Color
+    away_team_emoji: str
+    away_odds: float
+    away_strikes: int
+    away_score: float
+    away_team_batter_count: int
+    home_pitcher: Optional[UUID]
+    home_pitcher_name: str
+    home_batter: Optional[UUID]
+    home_batter_name: str
+    home_team: UUID
+    home_team_name: str
+    home_team_nickname: str
+    home_team_color: Color
+    home_team_emoji: str
+    home_odds: float
+    home_strikes: int
+    home_score: float
+    home_team_batter_count: int
     season: int
-    isPostseason: bool
+    is_postseason: bool
     day: int
     phase: int
-    gameComplete: bool
+    game_complete: bool
     finalized: bool
-    gameStart: bool
-    halfInningOuts: int
-    halfInningScore: float
+    game_start: bool
+    half_inning_outs: int
+    half_inning_score: float
     inning: int
-    topOfInning: bool
-    atBatBalls: int
-    atBatStrikes: int
-    seriesIndex: int
-    seriesLength: int
+    top_of_inning: bool
+    at_bat_balls: int
+    at_bat_strikes: int
+    series_index: int
+    series_length: int
     shame: bool
     weather: int
-    baserunnerCount: int
-    homeBases: int
-    awayBases: int
-    repeatCount: int
-    awayTeamSecondaryColor: Color
-    homeTeamSecondaryColor: Color
-    homeBalls: int
-    awayBalls: int
-    homeOuts: int
-    awayOuts: int
-    playCount: int
+    baserunner_count: int
+    home_bases: int
+    away_bases: int
+    repeat_count: int
+    away_team_secondary_color: Color
+    home_team_secondary_color: Color
+    home_balls: int
+    away_balls: int
+    home_outs: int
+    away_outs: int
+    play_count: int
     tournament: int
-    baseRunnerMods: list[str]
-    homePitcherMod: str
-    homeBatterMod: str
-    awayPitcherMod: str
-    awayBatterMod: str
-    scoreUpdate: str
-    scoreLedger: str
-    stadiumId: UUID
-    secretBaserunner: Optional[UUID]
-    topInningScore: float
-    bottomInningScore: float
-    newInningPhase: int
-    gameStartPhase: int
-    isTitleMatch: bool
-    queuedEvents: list[str]
+    base_runner_mods: list[str]
+    home_pitcher_mod: str
+    home_batter_mod: str
+    away_pitcher_mod: str
+    away_batter_mod: str
+    score_update: str
+    score_ledger: str
+    stadium_id: UUID
+    secret_baserunner: Optional[UUID]
+    top_inning_score: float
+    bottom_inning_score: float
+    new_inning_phase: int
+    game_start_phase: int
+    is_title_match: bool
+    queued_events: list[str]
     state: GameState
-    endPhase: int
+    end_phase: int
 
 
 class GamesData(FixedModel):
@@ -162,11 +162,11 @@ class GamesData(FixedModel):
     season: SeasonData
     standings: Standings
     schedule: list[Game]
-    tomorrowSchedule: list[Game]
+    tomorrow_schedule: list[Game]
     postseason: Postseason
 
     def get_team_today(self, nickname: str) -> Game:
         for game in self.schedule:
-            if game.homeTeamNickname == nickname or game.awayTeamNickname == nickname:
+            if game.home_team_nickname == nickname or game.away_team_nickname == nickname:
                 return game
         raise ValueError(f"{nickname} is not playing right now")

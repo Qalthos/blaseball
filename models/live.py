@@ -8,7 +8,7 @@ from models.league import LeagueData
 class FightData(FixedModel):
     # Not sure if this is ever gonna get filled, but
     # cause problems when it does
-    bossFights: list[None]
+    boss_fights: list[None]
 
 
 class TemporalValues(FixedModel):

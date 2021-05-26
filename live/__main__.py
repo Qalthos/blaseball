@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Generator
 
 from blaseball_mike.events import stream_events
-from blaseball_mike.tables import Weather
+from blaseball_mike.models import Weather
 from rich.columns import Columns
 from rich.console import RenderGroup
 from rich.layout import Layout
@@ -124,7 +124,7 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 
 
 def big_game(game: Game) -> Panel:
-    weather = Weather(game.weather).text
+    weather = Weather.load_one(game.weather).name
     if game.is_postseason:
         series = f"First to {game.series_length}"
     else:
@@ -208,7 +208,7 @@ def big_game(game: Game) -> Panel:
 
 
 def little_game(game: Game) -> Panel:
-    weather = Weather(game.weather).text
+    weather = Weather.load_one(game.weather).name
 
     grid = Table.grid(expand=True)
     grid.add_column()

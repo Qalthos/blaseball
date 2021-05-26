@@ -167,6 +167,6 @@ class GamesData(FixedModel):
 
     def get_team_today(self, nickname: str) -> Game:
         for game in self.schedule:
-            if game.home_team_nickname == nickname or game.away_team_nickname == nickname:
+            if nickname in (game.home_team_nickname, game.away_team_nickname):
                 return game
         raise ValueError(f"{nickname} is not playing right now")

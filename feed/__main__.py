@@ -4,7 +4,8 @@ from functools import partial
 from typing import Any, Optional, Union
 
 from blaseball_mike import database
-from blaseball_mike.tables import StatType, Tarot, Weather
+from blaseball_mike.models import Weather
+from blaseball_mike.tables import StatType, Tarot
 from rich.live import Live
 from rich.table import Table
 from rich.text import Text
@@ -81,8 +82,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
         elif entry["type"] == 26:
             # Weather changed
             changes = Text.assemble(
-                f"{Weather(metadata['before']).text} -> ",
-                Weather(metadata["after"]).text,
+                f"{Weather.load_one(metadata['before']).name} -> ",
+                Weather.load_one(metadata["after"]).name,
             )
         elif entry["type"] == 81:
             # Tarot reading

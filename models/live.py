@@ -1,14 +1,12 @@
 from typing import Optional
 
 from models import FixedModel
-from models.game import GamesData
+from models.game import Game, GamesData
 from models.league import LeagueData
 
 
 class FightData(FixedModel):
-    # Not sure if this is ever gonna get filled, but
-    # cause problems when it does
-    boss_fights: list[None]
+    boss_fights: list[Game]
 
 
 class TemporalValues(FixedModel):

@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from flask import Flask, render_template, request
@@ -7,6 +8,7 @@ from flask_caching import Cache
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
+data_path = Path("/srv/blaseball")
 
 
 @app.route("/")
@@ -45,9 +47,9 @@ def show_teams_json(season_no: Optional[int] = None):
 
 
 def load_json(table: str, season_no: Optional[int] = None) -> str:
-    dest = f"/srv/blaseball/{table}.json"
+    dest = data_path / f"{table}.json"
     if season_no is not None:
-        dest = f"/srv/blaseball/{table}.{season_no}.json"
+        dest = data_path / f"{table}.{season_no}.json"
 
     try:
         with open(dest) as json_file:

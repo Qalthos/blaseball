@@ -15,9 +15,12 @@ class PlayoffTeams(Iterable[Team]):
     others: List[Team]
 
     @classmethod
-    def load(cls, high: Division, low: Division) -> "PlayoffTeams":
+    def load(cls, high: Division, low: Division) -> tuple["PlayoffTeams", "PlayoffTeams"]:
         at_large = sorted(high.remainder + low.remainder, key=attrgetter("sort"), reverse=True)
-        return PlayoffTeams(high=high.winner, low=low.winner, others=at_large[:2])
+        overbracket = PlayoffTeams(high=high.winner, low=low.winner, others=at_large[:2])
+        at_large = sorted(high.remainder + low.remainder, key=attrgetter("sort"))
+        underbracket = PlayoffTeams(high=high.unwinner, low=low.unwinner, others=at_large[:2])
+        return overbracket, underbracket
 
     @property
     def cutoff(self):
@@ -47,7 +50,7 @@ class Subleague:
             yield from division.teams
 
     @property
-    def playoff_teams(self) -> PlayoffTeams:
+    def playoff_teams(self) -> tuple[PlayoffTeams, PlayoffTeams]:
         return PlayoffTeams.load(*self.divisions)
 
     @property
@@ -55,12 +58,18 @@ class Subleague:
         remainders = []
         for division in self.divisions:
             remainders.extend(division.remainder)
-        return sorted(remainders, key=attrgetter("sort"), reverse=True)[2:]
+        return sorted(remainders, key=attrgetter("sort"), reverse=True)[2:-2]
 
     @property
-    def cutoff(self):
-        return max(self.remainder, key=attrgetter("sort"))
+    def cutoff(self) -> tuple[Team, Team]:
+        return self.remainder[0], self.remainder[-1]
 
     def update(self, standings: models.Standings) -> None:
         for division in self.divisions:
             division.update(standings)
+
+    def get_division(self, team: Team) -> str:
+        for division in self.divisions:
+            if team in division.teams:
+                return division.name
+        raise ValueError(f"Team {team.name} is not in any division in this subleague")

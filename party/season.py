@@ -9,17 +9,25 @@ from party.models.team import Team
 
 
 class Row(NamedTuple):
-    badge: str
+    # Team metadata
+    id: str
     name: str
     color: str
-    tiebreaker: int
+    division: str
+
+    # Season data
     championships: int
-    in_progress: bool
     wins: int
-    record: str
+    tiebreaker: int
+    losses: int
+    games_played: int
+    in_progress: bool
+
+    # Outcome predictions
+    playoff: int  # 1 for Overbracket, -1 for Underbracket, 0 otherwise
+    wills: bool
     earliest: str
     estimate: Optional[str]
-    id: str
 
 
 Prediction = Dict[str, List[Optional[Row]]]
@@ -36,30 +44,38 @@ def get_league(league_id: str) -> League:
 
 
 def format_row(league: League, subleague: Subleague, team: Team, day: int) -> Row:
-    playoff = subleague.playoff_teams
-    if team in playoff:
+    overbracket, underbracket = subleague.playoff_teams
+    playoff_state = 0
+    if team in overbracket:
+        playoff_state = 1
         needed = team - subleague.cutoff
         estimate = team.estimate_party_time(needed)
-        badge = "H" if team == playoff.high else "L" if team == playoff.low else "*"
+        trophy = "🏆" if needed > (99 - subleague.cutoff.games_played) or estimate < day else ""
+    elif team in underbracket:
+        playoff_state = -1
+        needed = team - subleague.cutoff
+        estimate = team.estimate_party_time(needed)
         trophy = "🏆" if needed > (99 - subleague.cutoff.games_played) or estimate < day else ""
     else:
-        needed = playoff.cutoff - team
+        needed = overbracket.cutoff - team
         estimate = team.estimate_party_time(needed)
-        badge = "▼" if team in league.bottom_four else ""
         trophy = "🥳" if needed > (99 - team.games_played) or estimate < day else ""
 
     earliest = team.games_played + (99 - team.games_played - needed) // 2 + 1
 
     return Row(
         id=team.id,
-        badge=badge,
         name=team.name,
         color=team.color,
-        tiebreaker=team.tiebreaker,
+        division=subleague.get_division(team),
         championships=team.championships,
-        in_progress=bool(team.games_played < (day + 1) < 100),
         wins=team.wins,
-        record=team.record,
+        tiebreaker=team.tiebreaker,
+        losses=team.losses,
+        games_played=team.games_played,
+        in_progress=bool(team.games_played < (day + 1) < 100),
+        playoff=playoff_state,
+        wills=bool(team in league.bottom_four),
         earliest=str(earliest) if earliest > team.games_played else "N/A",
         estimate=trophy or str(estimate) if estimate > 33 else None,
     )

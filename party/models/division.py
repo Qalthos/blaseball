@@ -31,8 +31,12 @@ class Division:
         return self.teams[0]
 
     @property
+    def unwinner(self) -> Team:
+        return self.teams[-1]
+
+    @property
     def remainder(self) -> List[Team]:
-        return self.teams[1:]
+        return self.teams[1:-1]
 
     def update(self, standings: models.Standings) -> None:
         for team in self.teams:

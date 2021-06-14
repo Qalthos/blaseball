@@ -6,7 +6,7 @@ from models.league import LeagueData
 
 
 class FightData(FixedModel):
-    boss_fights: list[Game]
+    boss_fights: Optional[list[Game]]
 
 
 class TemporalValues(FixedModel):

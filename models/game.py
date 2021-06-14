@@ -8,14 +8,18 @@ from models import FixedModel
 from models.postseason import Postseason
 
 
+class SimState(FixedModel):
+    pass
+
+
 class SimData(FixedModel):
     id: str
     day: int
     league: UUID
     next_phase_time: datetime
     phase: int
-    play_off_round: int
-    playoffs: UUID
+    play_off_round: Optional[int]
+    playoffs: list[UUID]
     rules: UUID
     season: int
     season_id: UUID
@@ -41,6 +45,7 @@ class SimData(FixedModel):
     latepostseason_date: datetime
     election_date: datetime
     menu: str
+    state: SimState
 
 
 class SeasonData(FixedModel):
@@ -163,7 +168,7 @@ class GamesData(FixedModel):
     standings: Standings
     schedule: list[Game]
     tomorrow_schedule: list[Game]
-    postseason: Postseason
+    postseasons: list[Postseason]
 
     def get_team_today(self, nickname: str) -> Game:
         for game in self.schedule:

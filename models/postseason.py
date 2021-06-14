@@ -57,13 +57,13 @@ class PlayoffMatchup(FixedModel):
 
 
 class Postseason(FixedModel):
-    playoffs: Playoffs
-    all_rounds: list[PlayoffRound]
-    all_matchups: list[PlayoffMatchup]
-    round: PlayoffRound
-    matchups: list[PlayoffMatchup]
-    tomorrow_round: PlayoffRound
-    tomorrow_matchups: list[PlayoffMatchup]
+    playoffs: Optional[Playoffs]
+    all_rounds: Optional[list[PlayoffRound]]
+    all_matchups: Optional[list[PlayoffMatchup]]
+    round: Optional[PlayoffRound]
+    matchups: Optional[list[PlayoffMatchup]]
+    tomorrow_round: Optional[PlayoffRound]
+    tomorrow_matchups: Optional[list[PlayoffMatchup]]
 
     def get_matchup(self, matchup_id: UUID) -> PlayoffMatchup:
         for matchup in self.all_matchups:

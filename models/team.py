@@ -155,8 +155,7 @@ class Team(FixedModel):
     id: UUID
     lineup: list[UUID]
     rotation: list[UUID]
-    bullpen: list[UUID]
-    bench: list[UUID]
+    shadows: list[UUID]
     full_name: str
     nickname: str
     location: str
@@ -171,6 +170,8 @@ class Team(FixedModel):
     season_shames: int
     season_shamings: int
     championships: int
+    underchampionships: int
+    deceased: bool
     game_attr: list[str]
     week_attr: list[str]
     seas_attr: list[str]
@@ -180,6 +181,7 @@ class Team(FixedModel):
     card: tables.Tarot
     tournament_wins: int
     stadium: Optional[UUID]
+    imPosition: tuple[float, float]
     eDensity: float
     evolution: int
     win_streak: int

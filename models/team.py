@@ -109,8 +109,10 @@ class FaxMachine(FixedModel):
 
 
 class StadiumState(FixedModel):
+    air_balloons: Optional[int]
     fax_machine: Optional[FaxMachine]
     solar_panels: Optional[bool]
+    event_horizon: Optional[bool]
 
 
 class Stadium(FixedModel):

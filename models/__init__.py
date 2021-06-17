@@ -12,3 +12,4 @@ class FixedModel(BaseModel):
     class Config:
         extra: str = "forbid"
         alias_generator = to_camel
+        allow_population_by_field_name = True

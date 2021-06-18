@@ -13,6 +13,8 @@ class Playoffs(FixedModel):
     playoff_day: int
     rounds: list[UUID]
     season: int
+    bracket: int
+    round: int
     tomorrow_round: int
     winner: Optional[UUID]
     tournament: int
@@ -66,6 +68,8 @@ class Postseason(FixedModel):
     tomorrow_matchups: Optional[list[PlayoffMatchup]]
 
     def get_matchup(self, matchup_id: UUID) -> PlayoffMatchup:
+        if self.all_matchups is None:
+            raise ValueError("No matchups")
         for matchup in self.all_matchups:
             if matchup.id == matchup_id:
                 return matchup

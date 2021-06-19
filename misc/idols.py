@@ -28,7 +28,11 @@ def format_row(index: int, player: str, previous: list[str]) -> tuple[str, str, 
     last = ""
     if player != previous[index]:
         try:
-            last = f"[strike]{previous.index(player) + 1}"
+            last_index = previous.index(player)
+            if last_index > index:
+                last = f"[green]▲{last_index - index}[/]"
+            else:
+                last = f"[red]▼{index - last_index}[/]"
         except ValueError:
             last = "->"
         player = f"[yellow]{player}"

@@ -102,8 +102,8 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
         end = sim.earlpostseason_date
     elif sim.phase == 9:
         phase = "Earlpostseason"
-        end = sim.earlpostseason_date
-        start = sim.latepostseason_date
+        start = sim.earlpostseason_date
+        end = sim.latepostseason_date
     elif sim.phase == 10:
         phase = "Postearlpostseason"
         start = sim.earlpostseason_date

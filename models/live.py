@@ -1,12 +1,12 @@
-from typing import Optional
+from typing import Optional, Union
 
-from models import FixedModel
+from models import FixedModel, Nothing
 from models.game import Game, GamesData
 from models.league import LeagueData
 
 
 class FightData(FixedModel):
-    boss_fights: Optional[list[Game]]
+    boss_fights: list[Game]
 
 
 class TemporalValues(FixedModel):
@@ -29,5 +29,5 @@ class TemporalData(FixedModel):
 class StreamData(FixedModel):
     games: Optional[GamesData]
     leagues: Optional[LeagueData]
-    fights: Optional[FightData]
+    fights: Union[FightData, Nothing]
     temporal: Optional[TemporalData]

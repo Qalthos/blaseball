@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
+from blaseball_mike.models import Player
 from pydantic.color import Color
 
-from models import FixedModel
+from models import FixedModel, Nothing
 from models.postseason import Postseason
 
 
@@ -18,7 +19,6 @@ class SimData(FixedModel):
     league: UUID
     next_phase_time: datetime
     phase: int
-    play_off_round: Optional[int]
     playoffs: list[UUID]
     rules: UUID
     season: int
@@ -73,9 +73,16 @@ class Prize(FixedModel):
     winner: Optional[UUID]
 
 
+class GamePostseason(FixedModel):
+    bracket: int
+    matchup: UUID
+    playoff_id: UUID
+
+
 class GameState(FixedModel):
     holiday_inning: Optional[bool]
     prize_match: Optional[Prize]
+    postseason: Optional[GamePostseason]
 
 
 class Game(FixedModel):
@@ -168,7 +175,7 @@ class GamesData(FixedModel):
     standings: Standings
     schedule: list[Game]
     tomorrow_schedule: list[Game]
-    postseasons: list[Postseason]
+    postseasons: list[Union[Nothing, Postseason]]
 
     def get_team_today(self, nickname: str) -> Game:
         for game in self.schedule:

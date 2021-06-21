@@ -13,3 +13,8 @@ class FixedModel(BaseModel):
         extra: str = "forbid"
         alias_generator = to_camel
         allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+
+
+class Nothing(FixedModel):
+    """Empty dictionary instead of values"""

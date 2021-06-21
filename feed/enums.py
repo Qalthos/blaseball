@@ -23,3 +23,15 @@ ModColor = IntEnum(
     ],
     start=0,
 )
+
+
+Stat = IntEnum(
+    "Stat",
+    [
+        "Batting",
+        "Pitching",
+        "Defense",
+        "Baserunning",
+        "Combined",
+    ]
+)

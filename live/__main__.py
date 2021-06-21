@@ -54,6 +54,8 @@ def highlight(game: Game) -> str:
         style = "red"
     elif game.last_update.endswith("is Partying!"):
         style = "#ff66f9"
+    elif game.last_update.startswith("CONSUMERS ATTACK"):
+        style = "#a16dc3"
 
     return style
 
@@ -202,7 +204,7 @@ def big_game(game: Game) -> Panel:
     style = highlight(game)
     return Panel(
         RenderGroup(info, "", state, update),
-        width=60,
+        width=61,
         border_style=style,
     )
 
@@ -231,11 +233,18 @@ def little_game(game: Game) -> Panel:
 
 
 def render_games(games: list[Game]) -> Generator[Panel, None, None]:
+    highlight = None
     for game in games:
-        if not game.game_start or game.game_complete:
+        if game.game_start and not game.game_complete:
+            highlight = game
+            break
+    else:
+        highlight = games[0]
+    yield big_game(highlight)
+
+    for game in games:
+        if game is not highlight:
             yield little_game(game)
-        else:
-            yield big_game(game)
 
 
 async def main() -> None:
@@ -251,6 +260,7 @@ async def main() -> None:
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
+        Layout(name="highlight"),
         Layout(name="games"),
         Layout(name="progress", size=1),
     )
@@ -288,8 +298,10 @@ async def main() -> None:
                 except ValueError:
                     pass
 
+                game_widgets = render_games(today)
+                layout["highlight"].update(next(game_widgets))
                 layout["games"].update(
-                    Columns(render_games(today), equal=True, expand=True)
+                    Columns(game_widgets, equal=True, expand=True)
                 )
 
             live.refresh()

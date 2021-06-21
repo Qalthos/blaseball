@@ -10,7 +10,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.text import Text
 
-from feed.enums import Locations, ModColor
+from feed.enums import Location, ModColor
 
 JSON = dict[str, Any]
 TAROT = "#a16dc3"
@@ -122,15 +122,15 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append(mod, style=mod_type)
         elif entry["type"] == 109:
             # Player added to team
-            location = Locations(metadata["location"]).name
+            location = Location(metadata["location"]).name
             changes = f"{location}: +{metadata['playerName']}"
         elif entry["type"] == 112:
             # Player removed from team
             changes = f"{metadata['teamName']}: -{metadata['playerName']}"
         elif entry["type"] == 113:
             # Exchange players between teams
-            location_a = Locations(metadata["aLocation"]).name
-            location_b = Locations(metadata["bLocation"]).name
+            location_a = Location(metadata["aLocation"]).name
+            location_b = Location(metadata["bLocation"]).name
             changes = (
                 f"{metadata['aPlayerName']}: {metadata['aTeamName']} {location_a}"
                 f" -> {metadata['bTeamName']} {location_b}\n"
@@ -139,8 +139,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 114:
             # Exchange players within a team
-            location_a = Locations(metadata["aLocation"]).name
-            location_b = Locations(metadata["bLocation"]).name
+            location_a = Location(metadata["aLocation"]).name
+            location_b = Location(metadata["bLocation"]).name
             changes = (
                 f"{metadata['aPlayerName']}:\n"
                 f" {location_a} -> {location_b}\n"
@@ -149,8 +149,8 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 115:
             # Move a player
-            location_src = Locations(metadata["location"]).name
-            location_dest = Locations(metadata["receiveLocation"]).name
+            location_src = Location(metadata["location"]).name
+            location_dest = Location(metadata["receiveLocation"]).name
             changes = (
                 f"{metadata['playerName']}: "
                 f"{metadata['sendTeamName']} {location_src} -> "
@@ -158,7 +158,7 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             )
         elif entry["type"] == 116:
             # Replace a player
-            location = Locations(metadata["location"]).name
+            location = Location(metadata["location"]).name
             changes = (
                 f"{metadata['teamName']} {location}: "
                 f"{metadata['outPlayerName']} -> {metadata['inPlayerName']} "

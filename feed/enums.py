@@ -1,7 +1,8 @@
 from enum import IntEnum
 
-Locations = IntEnum(
-    "Locations",
+
+Location = IntEnum(
+    "Location",
     [
         "Lineup",
         "Rotation",

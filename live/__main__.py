@@ -29,6 +29,9 @@ def inning(game: Game) -> Text:
         if game.shame:
             style = "#800878"
             inning = "SHAME"
+        elif game.state.holiday_inning:
+            style = "#ff66f9"
+            inning = "PARTY"
         elif game.game_complete:
             style = "red"
             inning = "FINAL"

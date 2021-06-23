@@ -149,6 +149,7 @@ class Stadium(FixedModel):
 class TeamState(FixedModel):
     donated_shame: Optional[float]
     overflow_runs: Optional[float]
+    redacted: Optional[bool]
     perm_mod_sources: Optional[dict[str, list[str]]]
     game_mod_sources: Optional[dict[str, list[str]]]
 

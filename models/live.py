@@ -30,4 +30,4 @@ class StreamData(FixedModel):
     games: Optional[GamesData]
     leagues: Optional[LeagueData]
     fights: Union[FightData, Nothing]
-    temporal: Optional[TemporalData]
+    temporal: Union[TemporalData, Nothing, None]

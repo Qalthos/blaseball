@@ -4,7 +4,7 @@ import time
 from typing import Any
 
 import requests
-from rich.progress import Progress
+from rich.progress import Progress, BarColumn
 
 URL = "https://www.blaseball.com/database/renovationProgress"
 
@@ -22,45 +22,36 @@ def read_reno() -> dict[str, Any]:
         for mod in data["stats"]
     ], reverse=True)
     return {
-        "renos": data["progress"]["total"],
+        "complete": data["progress"]["total"],
         "progress": data["progress"]["toNext"],
-        "mods": mods,
+        "items": mods,
     }
 
 
-def extrapolate():
-    data = read_reno()
-    locked = sum(4**i for i in range(data["renos"])) * 1000000
-    next = 4**data["renos"] * 1000000
-    complete = next * data["progress"]
-    print(f"{next - complete:,.0f} needed for next renovation")
-    for mod in data["mods"]:
-        try:
-            estimate = (locked + complete) * mod[0] / 100
-        except ZeroDivisionError:
-            estimate = 0
-        print(f"{mod[1]}: {estimate:,.0f} coins")
-
-
-def update(progress: Progress, overall: int, mods: dict[str, tuple[int, str]], stats: dict[str, Any]) -> None:
+def update(progress: Progress, overall: int, items: dict[str, tuple[int, str]], stats: dict[str, Any]) -> None:
     progress.update(
         overall,
-        description=f"{stats['renos']} Renovations Complete",
+        description=f"{stats['complete']} Renovations Complete",
         completed=stats["progress"],
     )
-    for mod in stats["mods"]:
+    for item in stats["items"]:
         progress.update(
-            mods[mod[1]],
-            completed=mod[0],
+            items[item[1]],
+            completed=item[0],
         )
 
 
 def main() -> None:
-    with Progress() as progress:
+    progress = Progress(
+        "[progress.description]{task.description}",
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.0f}%",
+    )
+    with progress:
         stats = read_reno()
-        overall = progress.add_task(f"{stats['renos']} Reonovations Complete", total=1)
+        overall = progress.add_task(f"{stats['complete']} Reonovations Complete", total=1)
         mods = {}
-        for mod in stats["mods"]:
+        for mod in stats["items"]:
             mods[mod[1]] = progress.add_task(mod[1])
         while True:
             update(progress, overall, mods, read_reno())

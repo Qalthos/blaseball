@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 import sys
 import time
 from typing import Any
 
 import requests
-from rich.progress import Progress
+from rich.progress import Progress, BarColumn
 
 URL = "https://www.blaseball.com/database/giftProgress"
 
@@ -22,45 +23,36 @@ def read_gift() -> dict[str, Any]:
         for gift in data["teamWishLists"][team_id]
     ], reverse=True)
     return {
-        "gifts": data["teamProgress"][team_id]["total"],
+        "complete": data["teamProgress"][team_id]["total"],
         "progress": data["teamProgress"][team_id]["toNext"],
-        "wishlist": wishes,
+        "items": wishes,
     }
 
 
-def extrapolate():
-    data = read_reno()
-    locked = sum(4**i for i in range(data["renos"])) * 1000000
-    next = 4**data["renos"] * 1000000
-    complete = next * data["progress"]
-    print(f"{next - complete:,.0f} needed for next renovation")
-    for mod in data["mods"]:
-        try:
-            estimate = (locked + complete) * mod[0] / 100
-        except ZeroDivisionError:
-            estimate = 0
-        print(f"{mod[1]}: {estimate:,.0f} coins")
-
-
-def update(progress: Progress, overall: int, mods: dict[str, tuple[int, str]], stats: dict[str, Any]) -> None:
+def update(progress: Progress, overall: int, items: dict[str, tuple[int, str]], stats: dict[str, Any]) -> None:
     progress.update(
         overall,
-        description=f"{stats['gifts']} Gifts Obtained",
+        description=f"{stats['complete']} Gifts Obtained",
         completed=stats["progress"],
     )
-    for mod in stats["wishlist"]:
+    for item in stats["items"]:
         progress.update(
-            mods[mod[1]],
-            completed=mod[0],
+            items[item[1]],
+            completed=item[0],
         )
 
 
 def main() -> None:
-    with Progress() as progress:
+    progress = Progress(
+        "[progress.description]{task.description}",
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.0f}%",
+    )
+    with progress:
         stats = read_gift()
-        overall = progress.add_task(f"{stats['gifts']} Gifts Obtained", total=1)
+        overall = progress.add_task(f"{stats['complete']} Gifts Obtained", total=1)
         gifts = {}
-        for gift in stats["wishlist"]:
+        for gift in stats["items"]:
             gifts[gift[1]] = progress.add_task(gift[1], total=1)
         while True:
             update(progress, overall, gifts, read_gift())

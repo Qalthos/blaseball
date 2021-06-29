@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Generator
 
 from blaseball_mike.events import stream_events
@@ -15,10 +15,12 @@ from rich.table import Table
 from rich.text import Text
 
 from models.game import Game, SimData
+from models.team import Stadium
 from models.live import StreamData
 
 TEAM_URL = "https://www.blaseball.com/team"
 PLAYER_URL = "https://www.blaseball.com/player"
+LINK = "[link={url}/{id!s}]{name}"
 
 
 def inning(game: Game) -> Text:
@@ -61,6 +63,24 @@ def highlight(game: Game) -> str:
         style = "#a16dc3"
 
     return style
+
+
+def update(game: Game) -> str:
+    update = "\n"
+    if game.game_complete:
+        update += "\n".join(game.outcomes)
+    else:
+        update += game.last_update
+    if game.score_ledger:
+        update += f"\n[#c4c4c4]{game.score_ledger}[/]"
+    if game.score_update:
+        color = ""
+        if "run" in game.score_update:
+            color = "[yellow]"
+        elif "unrun" in game.score_update:
+            color = "[red]"
+        update += f" {color}{game.score_update}"
+    return update
 
 
 def phase_time(sim: SimData) -> tuple[str, int, int]:
@@ -128,7 +148,7 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
     return phase, current, total
 
 
-def big_game(game: Game) -> Panel:
+def big_game(game: Game, stadium: Stadium) -> Panel:
     weather = Weather.load_one(game.weather).name
     if game.is_postseason:
         series = f"First to ±{game.series_length}"
@@ -142,13 +162,13 @@ def big_game(game: Game) -> Panel:
 
     info.add_row(inning(game), weather, series)
     info.add_row(
-        f"[link={TEAM_URL}/{game.away_team!s}]{game.away_team_name}",
-        f"[link={PLAYER_URL}/{game.away_pitcher!s}]{game.away_pitcher_name}",
+        LINK.format(url=TEAM_URL, id=game.away_team, name=game.away_team_name),
+        LINK.format(url=PLAYER_URL, id=game.away_pitcher, name=game.away_pitcher_name),
         f"{game.away_score:g}"
     )
     info.add_row(
-        f"[link={TEAM_URL}/{game.home_team!s}]{game.home_team_name}",
-        f"[link={PLAYER_URL}/{game.home_pitcher!s}]{game.home_pitcher_name}",
+        LINK.format(url=TEAM_URL, id=game.home_team, name=game.home_team_name),
+        LINK.format(url=PLAYER_URL, id=game.home_pitcher, name=game.home_pitcher_name),
         f"{game.home_score:g}"
     )
 
@@ -157,17 +177,22 @@ def big_game(game: Game) -> Panel:
         total_strikes = game.away_strikes
         total_outs = game.away_outs
         total_bases = game.away_bases
-        batter = f"[link={PLAYER_URL}/{game.away_batter!s}]{game.away_batter_name}"
+        batter = LINK.format(url=PLAYER_URL, id=game.away_batter, name=game.away_batter_name)
     else:
         total_balls = game.home_balls
         total_strikes = game.home_strikes
         total_outs = game.home_outs
         total_bases = game.home_bases
-        batter = f"[link={PLAYER_URL}/{game.home_batter!s}]{game.home_batter_name}"
+        batter = LINK.format(url=PLAYER_URL, id=game.home_batter, name=game.home_batter_name)
 
     runners = ["", "", "", ""]
+    secret = ""
+    if "SECRET_BASE" in stadium.mods:
+        if game.secret_baserunner:
+            secret = LINK.format(url=PLAYER_URL, id=game.secret_baserunner, name=game.secret_baserunner_name)
+        secret += "🔒"
     for base, runner_id, runner in zip(game.bases_occupied, game.base_runners, game.base_runner_names):
-        runners[base] = f"[link={PLAYER_URL}/{runner_id!s}]{runner}"
+        runners[base] = LINK.format(url=PLAYER_URL, id=runner_id, name=runner)
 
     state = Table.grid(expand=True)
     state.add_column(width=5)
@@ -175,38 +200,23 @@ def big_game(game: Game) -> Panel:
     state.add_column(ratio=1)
     state.add_row(
         f"B {'●' * game.at_bat_balls}{'○' * (total_balls - game.at_bat_balls - 1)}",
-        f"{runners[2]} 3",
+        secret,
         f"2 {runners[1]}",
     )
     state.add_row(
         f"S {'●' * game.at_bat_strikes}{'○' * (total_strikes - game.at_bat_strikes - 1)}",
-        f"{runners[3]} 4" if total_bases >= 5 else "",
+        f"{runners[2]} 3",
         f"1 {runners[0]}",
     )
     state.add_row(
         f"O {'●' * game.half_inning_outs}{'○' * (total_outs - game.half_inning_outs - 1)}",
-        "SECRET 🔒" if game.secret_baserunner else "🔒",
+        f"{runners[3]} 4" if total_bases >= 5 else "",
         f"🏏 {batter}",
     )
 
-    update = "\n"
-    if game.game_complete:
-        update += "\n".join(game.outcomes)
-    else:
-        update += game.last_update
-    if game.score_ledger:
-        update += f"\n{game.score_ledger}"
-    if game.score_update:
-        color = ""
-        if "Run" in game.score_update:
-            color = "[yellow]"
-        elif "Unrun" in game.score_update:
-            color = "[red]"
-        update += f" {color}{game.score_update}"
-
     style = highlight(game)
     return Panel(
-        RenderGroup(info, "", state, update),
+        RenderGroup(info, "", state, update(game)),
         width=61,
         border_style=style,
     )
@@ -222,28 +232,21 @@ def little_game(game: Game) -> Panel:
     grid.add_row(game.away_team_nickname, f"{game.away_score:g}")
     grid.add_row(game.home_team_nickname, f"{game.home_score:g}")
 
-    update = "\n"
-    if game.game_complete:
-        update += "\n".join(game.outcomes)
-    else:
-        update += game.last_update
-
-    if not update.strip():
-        return Panel(grid, width=30)
-    else:
-        style = highlight(game)
-        return Panel(RenderGroup(grid, update), width=30, border_style=style)
+    style = highlight(game)
+    return Panel(RenderGroup(grid, update(game)), width=30, border_style=style)
 
 
-def render_games(games: list[Game]) -> Generator[Panel, None, None]:
+def render_games(games: list[Game], stadia: list[Stadium]) -> Generator[Panel, None, None]:
     highlight = None
+    stadium = None
     for game in games:
         if game.game_start and not game.game_complete:
             highlight = game
             break
     else:
         highlight = games[0]
-    yield big_game(highlight)
+    stadium = [stadium for stadium in stadia if stadium.id == highlight.stadium_id][0]
+    yield big_game(highlight, stadium)
 
     for game in games:
         if game is not highlight:
@@ -276,7 +279,8 @@ async def main() -> None:
         async for event in stream_events():
             stream_data = StreamData.parse_obj(event)
 
-            if leagues := stream_data.leagues:
+            if stream_data.leagues:
+                leagues = stream_data.leagues
                 chest_stats = leagues.stats.community_chest
                 chest_progress.update(chest, completed=float(chest_stats.runs))
 
@@ -301,7 +305,7 @@ async def main() -> None:
                 except ValueError:
                     pass
 
-                game_widgets = render_games(today)
+                game_widgets = render_games(today, leagues.stadiums)
                 layout["highlight"].update(next(game_widgets))
                 layout["games"].update(
                     Columns(game_widgets, equal=True, expand=True)

@@ -171,6 +171,12 @@ class Game(FixedModel):
     queued_events: list[str]
     state: GameState
 
+    @property
+    def secret_baserunner_name(self) -> Optional[str]:
+        if self.secret_baserunner:
+            return Player.load_one(str(self.secret_baserunner)).name
+        return None
+
 
 class GamesData(FixedModel):
     sim: SimData

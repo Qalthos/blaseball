@@ -112,6 +112,7 @@ class StadiumState(FixedModel):
     air_balloons: Optional[int]
     flood_balloons: Optional[int]
     fax_machine: Optional[FaxMachine]
+    flood_balloons: Optional[int]
     solar_panels: Optional[bool]
     event_horizon: Optional[bool]
 
@@ -147,10 +148,18 @@ class Stadium(FixedModel):
     state: StadiumState
 
 
+class StolenPlayer(FixedModel):
+    id: UUID
+    victim_index: int
+    victim_team_id: UUID
+    victim_location: int
+
+
 class TeamState(FixedModel):
     donated_shame: Optional[float]
     overflow_runs: Optional[float]
     redacted: Optional[bool]
+    stolen_players: Optional[list[StolenPlayer]]
     perm_mod_sources: Optional[dict[str, list[str]]]
     game_mod_sources: Optional[dict[str, list[str]]]
 

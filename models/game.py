@@ -122,16 +122,23 @@ class Game(FixedModel):
     home_score: float
     home_team_batter_count: int
     season: int
-    is_postseason: bool
     day: int
+    # Phases
     phase: int
+    game_start_phase: int
+    new_inning_phase: int
+    new_half_inning_phase: int
+    end_phase: int
+    # Flags
+    is_postseason: bool
+    is_title_match: bool
+    game_start: bool
     game_complete: bool
     finalized: bool
-    game_start: bool
+    top_of_inning: bool
     half_inning_outs: int
     half_inning_score: float
     inning: int
-    top_of_inning: bool
     at_bat_balls: int
     at_bat_strikes: int
     series_index: int
@@ -161,12 +168,8 @@ class Game(FixedModel):
     secret_baserunner: Optional[UUID]
     top_inning_score: float
     bottom_inning_score: float
-    new_inning_phase: int
-    game_start_phase: int
-    is_title_match: bool
     queued_events: list[str]
     state: GameState
-    end_phase: int
 
 
 class GamesData(FixedModel):

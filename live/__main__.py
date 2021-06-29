@@ -131,7 +131,7 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
 def big_game(game: Game) -> Panel:
     weather = Weather.load_one(game.weather).name
     if game.is_postseason:
-        series = f"First to {game.series_length}"
+        series = f"First to ±{game.series_length}"
     else:
         series = f"{game.series_index} of {game.series_length}"
 

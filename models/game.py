@@ -185,9 +185,3 @@ class GamesData(FixedModel):
     schedule: list[Game]
     tomorrow_schedule: list[Game]
     postseasons: list[Union[Nothing, Postseason]]
-
-    def get_team_today(self, nickname: str) -> Game:
-        for game in self.schedule:
-            if nickname in (game.home_team_nickname, game.away_team_nickname):
-                return game
-        raise ValueError(f"{nickname} is not playing right now")

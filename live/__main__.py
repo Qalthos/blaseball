@@ -148,6 +148,13 @@ def phase_time(sim: SimData) -> tuple[str, int, int]:
     return phase, current, total
 
 
+def get_team_game(nickname: str, schedule: list[Game]) -> Game:
+    for game in schedule:
+        if nickname in (game.home_team_nickname, game.away_team_nickname):
+            return game
+    raise ValueError(f"{nickname} is not playing at that time")
+
+
 def big_game(game: Game, stadium: Stadium) -> Panel:
     weather = Weather.load_one(game.weather).name
     if game.is_postseason:
@@ -298,15 +305,27 @@ async def main() -> None:
                     key=lambda x: x.home_odds * x.away_odds + x.game_complete,
                 )
                 try:
-                    mechanics = games.get_team_today("Mechanics")
+                    mechanics = get_team_game("Mechanics", today)
                     # Reposition followed team to the front
                     today.remove(mechanics)
                     today.insert(0, mechanics)
                 except ValueError:
                     pass
+                tomorrow = sorted(
+                    games.tomorrow_schedule,
+                    key=lambda x: x.home_odds * x.away_odds + x.game_complete,
+                )
+                try:
+                    mechanics = get_team_game("Mechanics", tomorrow)
+                    # Reposition followed team to the front
+                    tomorrow.remove(mechanics)
+                    tomorrow.insert(0, mechanics)
+                except ValueError:
+                    pass
 
                 game_widgets = render_games(today, leagues.stadiums)
-                layout["highlight"].update(next(game_widgets))
+                forecast = little_game(tomorrow[0])
+                layout["highlight"].update(Columns((next(game_widgets), forecast), expand=True))
                 layout["games"].update(
                     Columns(game_widgets, equal=True, expand=True)
                 )

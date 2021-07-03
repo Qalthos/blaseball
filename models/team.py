@@ -112,7 +112,6 @@ class StadiumState(FixedModel):
     air_balloons: Optional[int]
     flood_balloons: Optional[int]
     fax_machine: Optional[FaxMachine]
-    flood_balloons: Optional[int]
     solar_panels: Optional[bool]
     event_horizon: Optional[bool]
 

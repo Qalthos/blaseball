@@ -1,8 +1,4 @@
-import time
-from collections.abc import Callable
-
 from rich.layout import Layout
-from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -49,7 +45,7 @@ def update_standings(data: Prediction) -> None:
                     Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
                     "●" * row.championships if row.championships < 4 else f"●x{row.championships}",
                     f"{'*' if row.in_progress else ''}{row.wins}",
-                    row.record,
+                    f"{row.nonlosses}-{row.losses}",
                     row.estimate,
                 )
 

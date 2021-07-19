@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Generator
 
 from blaseball_mike.events import stream_events
@@ -15,8 +15,8 @@ from rich.table import Table
 from rich.text import Text
 
 from models.game import Game, SimData
-from models.team import Stadium
 from models.live import StreamData
+from models.team import Stadium
 
 TEAM_URL = "https://www.blaseball.com/team"
 PLAYER_URL = "https://www.blaseball.com/player"
@@ -290,6 +290,8 @@ async def main() -> None:
                 leagues = stream_data.leagues
                 chest_stats = leagues.stats.community_chest
                 chest_progress.update(chest, completed=float(chest_stats.runs))
+            if leagues is None:
+                continue
 
             if games := stream_data.games:
                 phase_name, completed, total = phase_time(games.sim)

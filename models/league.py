@@ -34,8 +34,14 @@ class CommunityChest(FixedModel):
     runs: float
 
 
+class SunSun(FixedModel):
+    current: float
+    maximum: int
+
+
 class LeagueStats(FixedModel):
     community_chest: CommunityChest
+    sunsun: SunSun
 
 
 class LeagueData(FixedModel):

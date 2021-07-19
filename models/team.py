@@ -156,6 +156,7 @@ class StolenPlayer(FixedModel):
 
 class TeamState(FixedModel):
     donated_shame: Optional[float]
+    halfinning_plays: Optional[int]
     overflow_runs: Optional[float]
     redacted: Optional[bool]
     stolen_players: Optional[list[StolenPlayer]]

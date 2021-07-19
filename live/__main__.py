@@ -253,33 +253,40 @@ def render_games(games: list[Game], stadia: list[Stadium]) -> Generator[Panel, N
     else:
         highlight = games[0]
     stadium = [stadium for stadium in stadia if stadium.id == highlight.stadium_id][0]
-    yield big_game(highlight, stadium)
+    if not highlight.game_complete:
+        yield big_game(highlight, stadium)
 
     for game in games:
-        if game is not highlight:
+        if game.game_complete or game is not highlight:
             yield little_game(game)
 
 
 async def main() -> None:
-    phase_progress = Progress(expand=True)
-    phase = phase_progress.add_task("Phase")
-    chest_progress = Progress(
+    phase_progress = Progress(
         "[progress.description]{task.description}",
         BarColumn(),
-        "[progress.percentage]{task.completed}/{task.total}",
+        "[progress.percentage]{task.percentage:>3.0f}%",
         expand=True,
     )
-    chest = chest_progress.add_task("Community Chest", total=3000)
+    phase = phase_progress.add_task("Phase")
+    league_progress = Progress(
+        "[progress.description]{task.description}",
+        BarColumn(),
+        "[progress.percentage]{task.completed:g}/{task.total}",
+        expand=True,
+    )
+    chest = league_progress.add_task("Community Chest", total=3000)
+    sunsun = league_progress.add_task("Sun(Sun)")
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
         Layout(name="highlight"),
         Layout(name="games"),
-        Layout(name="progress", size=1),
+        Layout(name="progress", size=2),
     )
     layout["phase"].update(phase_progress)
     layout["games"].update(Text())
-    layout["progress"].update(chest_progress)
+    layout["progress"].update(league_progress)
 
     leagues = None
     with Live(layout, auto_refresh=False) as live:
@@ -289,7 +296,9 @@ async def main() -> None:
             if stream_data.leagues:
                 leagues = stream_data.leagues
                 chest_stats = leagues.stats.community_chest
-                chest_progress.update(chest, completed=float(chest_stats.runs))
+                league_progress.update(chest, completed=chest_stats.runs)
+                sun_stats = leagues.stats.sunsun
+                league_progress.update(sunsun, completed=sun_stats.current, total=sun_stats.maximum)
             if leagues is None:
                 continue
 

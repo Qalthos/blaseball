@@ -326,6 +326,25 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 (f"{metadata['after']:0.2f}", "green"),
             )
 
+        elif entry["type"] == 236:
+            # Item trading
+            changes = Text(f"{metadata['itemTradedName']}:")
+            for mod in metadata["modsLost"]:
+                changes.append("\n  ")
+                changes.append(LOSE)
+                changes.append(mod, style=ITEM)
+            changes.append(f"\n{metadata['itemReceivedName']}:")
+            for mod in metadata["modsGained"]:
+                changes.append("\n  ")
+                changes.append(GAIN)
+                changes.append(mod, style=ITEM)
+            changes.append(Text.assemble(
+                f"\n  {_to_stars(metadata['playerRating'])} + ",
+                _item_stars(metadata["playerItemRatingBefore"]),
+                f" -> {_to_stars(metadata['playerRating'])} + ",
+                _item_stars(metadata["playerItemRatingAfter"]),
+            ))
+
         table.add_row(day, description, changes)
 
     return table

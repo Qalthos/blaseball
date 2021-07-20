@@ -1,6 +1,5 @@
 from enum import IntEnum
 
-
 Location = IntEnum(
     "Location",
     [
@@ -22,16 +21,4 @@ ModColor = IntEnum(
         "#639e47",
     ],
     start=0,
-)
-
-
-Stat = IntEnum(
-    "Stat",
-    [
-        "Batting",
-        "Pitching",
-        "Defense",
-        "Baserunning",
-        "Combined",
-    ]
 )

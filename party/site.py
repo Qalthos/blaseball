@@ -7,12 +7,12 @@ from flask import Flask, render_template, request
 from flask_caching import Cache
 
 app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
+cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})  # dead: disable
 data_path = Path("/srv/blaseball")
 
 
 @app.route("/")
-def show_standings() -> str:
+def show_standings() -> str:  # dead: disable
     season_number = request.args.get("season", default=None, type=int)
     standings_json = show_standings_json(season_number)
     if standings_json:
@@ -29,7 +29,7 @@ def show_standings_json(season_no: Optional[int] = None) -> str:
 
 
 @app.route("/teams/<string:team_id>")
-def show_team_stats(team_id: str) -> str:
+def show_team_stats(team_id: str) -> str:  # dead: disable
     season_number = request.args.get("season", default=None, type=int)
     teams_json = show_teams_json(season_number)
     if teams_json:

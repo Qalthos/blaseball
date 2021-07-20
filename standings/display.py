@@ -46,7 +46,7 @@ def update_standings(data: Prediction) -> None:
                     "●" * row.championships if row.championships < 4 else f"●x{row.championships}",
                     f"{'*' if row.in_progress else ''}{row.wins}",
                     f"{row.nonlosses}-{row.losses}",
-                    row.estimate,
+                    str(row.party),
                 )
 
         layout[subleague].update(Panel(

@@ -1,8 +1,8 @@
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional
+from typing import Dict, List, NamedTuple, Optional, Union
 
 from models.game import GamesData, Standings
-from models.league import League, LeagueData, Subleague, Tiebreakers
+from models.league import Division, LeagueData, Subleague, Tiebreakers
 from models.team import Team
 
 
@@ -16,15 +16,54 @@ class Row(NamedTuple):
     wins: int
     losses: int
     nonlosses: int
-    earliest: str
-    estimate: Optional[str]
+    over: Union[int, str]
+    under: Union[int, str]
+    party: Union[int, str]
+    subleague: str
+    division: str
     id: str
 
 
 Prediction = Dict[str, List[Optional[Row]]]
+ATeam = tuple[Team, Subleague, Division]
 
 
-def format_row(team: Team, day: int, standings: Standings, tiebreaker: Tiebreakers) -> Row:
+def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Standings, tiebreak: Tiebreakers) -> Row:
+    team, subleague, division = ateam
+    subleague_teams = [t for t in other_teams if t[1] == ateam[1]]
+    division_teams = [t for t in subleague_teams if t[2] == ateam[2]]
+    nondivision_teams = [t for t in subleague_teams if t not in division_teams]
+
+    overbracket = [division_teams[0], nondivision_teams[0]]
+    for t in subleague_teams:
+        if t not in overbracket:
+            overbracket.append(t)
+        if len(overbracket) == 4:
+            break
+    overbracket = sort_teams(overbracket, standings, tiebreak)
+
+    underbracket = [division_teams[-1], nondivision_teams[-1]]
+    for t in subleague_teams[::-1]:
+        if t not in underbracket:
+            underbracket.append(t)
+        if len(underbracket) == 4:
+            break
+    underbracket = sort_teams(underbracket, standings, tiebreak)
+
+    overbracket_cutoff = overbracket[-1][0]
+    if overbracket_cutoff == nondivision_teams[0][0]:
+        # Beating this team does nothing, they get in regardless
+        overbracket_cutoff = overbracket[-2][0]
+
+    underbracket_cutoff = underbracket[0][0]
+    if underbracket_cutoff == nondivision_teams[0][0]:
+        # Losing to this team does nothing, they get in regardless
+        underbracket_cutoff = underbracket[1][0]
+
+    over = estimate(team, overbracket_cutoff, standings, tiebreak)
+    under = estimate(underbracket_cutoff, team, standings, tiebreak)
+    party = estimate(overbracket_cutoff, team, standings, tiebreak)
+
     games_played = standings.games_played[team.id]
     losses = standings.losses[team.id]
     return Row(
@@ -37,26 +76,39 @@ def format_row(team: Team, day: int, standings: Standings, tiebreaker: Tiebreake
         losses=losses,
         nonlosses=games_played - losses,
         badge="",
-        tiebreaker=tiebreaker.order.index(team.id) + 1,
-        earliest="",
-        estimate="",
+        tiebreaker=tiebreak.order.index(team.id) + 1,
+        over=over,
+        under=under,
+        party=party,
+        subleague=subleague.name,
+        division=division.name,
     )
 
 
-def teams_in_subleague(subleague: Subleague, league: LeagueData) -> list[Team]:
+def estimate(team: Team, to_beat: Team, standings: Standings, tiebreak: Tiebreakers) -> int:
+    difference = standings.wins[team.id] - standings.wins[to_beat.id]
+    if tiebreak.order.index(to_beat.id) > tiebreak.order.index(team.id):
+        difference += 1
+
+    played = standings.games_played[team.id]
+    return int((99 * played) / (difference + played)) + 1
+
+
+def league_teams(league: LeagueData) -> list[ATeam]:
     return [
-        t
-        for d in league.divisions if d.id in subleague.divisions
+        (t, s, d)
+        for s in league.subleagues
+        for d in league.divisions if d.id in s.divisions
         for t in league.teams if t.id in d.teams
     ]
 
 
-def sort_teams(teams: list[Team], standings: Standings, tiebreakers: Tiebreakers) -> list[Team]:
+def sort_teams(teams: list[ATeam], standings: Standings, tiebreak: Tiebreakers) -> list[ATeam]:
     return sorted(
         teams,
         key=lambda t: (
-            standings.wins[t.id],
-            -tiebreakers.order.index(t.id),
+            standings.wins[t[0].id],
+            -tiebreak.order.index(t[0].id),
         ),
         reverse=True,
     )
@@ -67,10 +119,10 @@ def get_standings(game_data: GamesData, league: LeagueData) -> Prediction:
 
     tiebreaker = league.tiebreakers[-1]
     predictions: Prediction = defaultdict(list)
-    for subleague in league.subleagues:
-        subleague_teams = teams_in_subleague(subleague, league)
-        subleague_teams = sort_teams(subleague_teams, game_data.standings, tiebreaker)
-        for team in subleague_teams:
-            predictions[subleague.name].append(format_row(team, game_data.sim.day, game_data.standings, tiebreaker))
+    teams = league_teams(league)
+    teams = sort_teams(teams, game_data.standings, tiebreaker)
+    for ateam in teams:
+        subleague = ateam[1]
+        predictions[subleague.name].append(format_row(ateam, teams, game_data.sim.day, game_data.standings, tiebreaker))
 
     return predictions

@@ -12,6 +12,7 @@ class Row(NamedTuple):
     color: str
     tiebreaker: int
     championships: int
+    underchampionships: int
     in_progress: bool
     wins: int
     losses: int
@@ -70,7 +71,8 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         id=str(team.id),
         name=team.nickname,
         color=team.main_color.as_hex(),
-        championships=team.championships % 3,
+        championships=team.championships,
+        underchampionships=team.underchampionships,
         in_progress=bool(games_played < (day + 1) < 100),
         wins=standings.wins[team.id],
         losses=losses,
@@ -114,12 +116,16 @@ def sort_teams(teams: list[ATeam], standings: Standings, tiebreak: Tiebreakers) 
     )
 
 
-def get_standings(game_data: GamesData, league: LeagueData) -> Prediction:
+def get_standings(game_data: GamesData, league_data: LeagueData) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
-    tiebreaker = league.tiebreakers[-1]
+    league = league_data.leagues[0]
+    tiebreaker = next((
+        tb for tb in league_data.tiebreakers
+        if tb.id == league.tiebreakers
+    ))
     predictions: Prediction = defaultdict(list)
-    teams = league_teams(league)
+    teams = league_teams(league_data)
     teams = sort_teams(teams, game_data.standings, tiebreaker)
     for ateam in teams:
         subleague = ateam[1]

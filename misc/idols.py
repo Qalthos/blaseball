@@ -10,18 +10,25 @@ from rich.table import Table
 
 URL = "https://www.blaseball.com/api/getIdols"
 PLAYER_URL = "https://www.blaseball.com/player"
+PLAYER = "[link={url}/{id}]{name}[/link]{skull}"
 
 
-def get_idols() -> tuple[list[str], list[str]]:
+def get_idols() -> list[list[str]]:
     resp = requests.get(URL).json()
     idols = resp["idols"][:resp["data"]["strictlyConfidential"] + 1]
     non_idols = resp["idols"][resp["data"]["strictlyConfidential"] + 1:]
 
     players = database.get_player(resp["idols"])
-    return (
-        [f"[link={PLAYER_URL}/{player}]{players[player]['name']}[/link]" for player in idols],
-        [f"[link={PLAYER_URL}/{player}]{players[player]['name']}[/link]" for player in non_idols],
-    )
+    return [
+        [
+            PLAYER.format(
+                url=PLAYER_URL,
+                skull='💀' if players[player_id]["deceased"] else '',
+                **players[player_id]
+            ) for player_id in position
+        ]
+        for position in (idols, non_idols)
+    ]
 
 
 def format_row(index: int, player: str, previous: list[str]) -> tuple[str, str, str]:

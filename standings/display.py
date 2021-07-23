@@ -25,29 +25,59 @@ for bracket in ("overbracket", "underbracket"):
     )
 
 
-def update_standings(data: Prediction) -> None:
-    layout["header"].update(Panel(Text("data.name", justify="center")))
-
+def update_standings(data: Prediction, day: int) -> None:
     for subleague, rows in data.items():
         teams = Table.grid(expand=True)
-        teams.add_column("Flag", width=2)
+        teams.add_column("Division", width=1)
         teams.add_column("Name")
-        teams.add_column("Championships", width=3, style="#FFEB57")
-        teams.add_column("Wins", width=4, justify="right")
-        teams.add_column("Record", width=6, justify="right")
-        teams.add_column("Estimate", width=3, justify="right")
+        teams.add_column("Championships", width=2)
+        teams.add_column("Wins", width=3, justify="right")
+        teams.add_column("WANG", width=3, justify="right")
+        teams.add_column("Record", width=5, justify="right")
+        teams.add_column("Party", width=2, justify="right")
+        teams.add_column("Postseason", width=2, justify="right")
         for row in rows:
-            if not row:
-                teams.add_row()
+            champs = row.championships % 3, row.underchampionships % 3
+            if sum(champs) == 3:
+                champs = (0, 0)
+            elif sum(champs) == 4:
+                if champs[0]:
+                    champs = (1, 0)
+                else:
+                    champs = (0, 1)
+            championships = ""
+            if champs[0]:
+                championships += f"[#FFEB57]{'●' * champs[0]}"
+            if champs[1]:
+                championships += f"{' ' * (2 - sum(champs))}[#A16DC3]{'●' * champs[1]}"
+
+            wang = f"{row.wins - row.nonlosses:+}"
+
+            closest = min(row.over, row.under)
+            if closest < day:
+                postseason = "👑"
+            elif closest > 99:
+                postseason = "🃏"
             else:
-                teams.add_row(
-                    row.badge,
-                    Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
-                    "●" * row.championships if row.championships < 4 else f"●x{row.championships}",
-                    f"{'*' if row.in_progress else ''}{row.wins}",
-                    f"{row.nonlosses}-{row.losses}",
-                    str(row.party),
-                )
+                postseason = str(closest)
+
+            if row.party < day:
+                party = "🥳"
+            elif row.party > 99:
+                party = "😐"
+            else:
+                party = str(row.party)
+
+            teams.add_row(
+                row.division.split()[1][0],
+                Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
+                championships,
+                f"{'*' if row.in_progress else ''}{row.wins}",
+                wang,
+                f"{row.nonlosses}-{row.losses}",
+                party,
+                postseason,
+            )
 
         layout[subleague].update(Panel(
             teams,

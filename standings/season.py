@@ -17,15 +17,15 @@ class Row(NamedTuple):
     wins: int
     losses: int
     nonlosses: int
-    over: Union[int, str]
-    under: Union[int, str]
-    party: Union[int, str]
+    over: int
+    under: int
+    party: int
     subleague: str
     division: str
     id: str
 
 
-Prediction = Dict[str, List[Optional[Row]]]
+Prediction = Dict[str, List[Row]]
 ATeam = tuple[Team, Subleague, Division]
 
 
@@ -50,20 +50,24 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         if len(underbracket) == 4:
             break
     underbracket = sort_teams(underbracket, standings, tiebreak)
+    middling = [
+        t for t in subleague_teams
+        if (t not in overbracket)
+        and (t not in underbracket)
+    ]
 
-    overbracket_cutoff = overbracket[-1][0]
-    if overbracket_cutoff == nondivision_teams[0][0]:
+    # TODO: Fix these for the case of division leader in last place
+    overbracket_cutoff = middling[0][0]
+    underbracket_cutoff = middling[-1][0]
+
+    party_cutoff = overbracket[-1][0]
+    if party_cutoff == nondivision_teams[0][0]:
         # Beating this team does nothing, they get in regardless
-        overbracket_cutoff = overbracket[-2][0]
-
-    underbracket_cutoff = underbracket[0][0]
-    if underbracket_cutoff == nondivision_teams[0][0]:
-        # Losing to this team does nothing, they get in regardless
-        underbracket_cutoff = underbracket[1][0]
+        party_cutoff = overbracket[-2][0]
 
     over = estimate(team, overbracket_cutoff, standings, tiebreak)
     under = estimate(underbracket_cutoff, team, standings, tiebreak)
-    party = estimate(overbracket_cutoff, team, standings, tiebreak)
+    party = estimate(party_cutoff, team, standings, tiebreak)
 
     games_played = standings.games_played[team.id]
     losses = standings.losses[team.id]

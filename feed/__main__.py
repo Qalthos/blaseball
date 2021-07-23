@@ -325,7 +325,9 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 f"{metadata['before']:0.2f} -> ",
                 (f"{metadata['after']:0.2f}", "green"),
             )
-
+        elif entry["type"] == 217:
+            # Sun pressure building
+            changes = f"{metadata['current'] / metadata['maximum']:0.2%}"
         elif entry["type"] == 236:
             # Item trading
             changes = Text(f"{metadata['itemTradedName']}:")

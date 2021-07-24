@@ -53,23 +53,8 @@ class LeagueData(FixedModel):
     tiebreakers: list[Tiebreakers]
     stats: LeagueStats
 
-    def get_team_subleague(self, team_id: UUID) -> Subleague:
-        for subleague in self.subleagues:
-            for division in self.divisions:
-                if division.id not in subleague.divisions:
-                    continue
-                if team_id in division.teams:
-                    return subleague
-        raise ValueError(f"Team {team_id!s} not found")
-
     def get_stadium(self, stadium_id: UUID) -> Stadium:
         for stadium in self.stadiums:
             if stadium.id == stadium_id:
                 return stadium
         raise ValueError(f"Stadium {stadium_id!s} not found")
-
-    def get_team(self, team_id: UUID) -> Team:
-        for team in self.teams:
-            if team.id == team_id:
-                return team
-        raise ValueError(f"Team {team_id!s} not found")

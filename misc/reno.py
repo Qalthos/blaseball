@@ -4,7 +4,7 @@ import time
 from typing import Any
 
 import requests
-from rich.progress import Progress, BarColumn
+from rich.progress import BarColumn, Progress
 
 URL = "https://www.blaseball.com/database/renovationProgress"
 

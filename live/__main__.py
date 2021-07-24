@@ -21,6 +21,7 @@ from models.team import Stadium
 TEAM_URL = "https://www.blaseball.com/team"
 PLAYER_URL = "https://www.blaseball.com/player"
 LINK = "[link={url}/{id!s}]{name}"
+TEAM = "Mechanics"
 
 
 def inning(game: Game) -> Text:
@@ -316,10 +317,10 @@ async def main() -> None:
                     key=lambda x: x.home_odds * x.away_odds + x.game_complete,
                 )
                 try:
-                    mechanics = get_team_game("Mechanics", today)
+                    favored = get_team_game(TEAM, today)
                     # Reposition followed team to the front
-                    today.remove(mechanics)
-                    today.insert(0, mechanics)
+                    today.remove(favored)
+                    today.insert(0, favored)
                 except ValueError:
                     pass
                 tomorrow = sorted(
@@ -327,16 +328,19 @@ async def main() -> None:
                     key=lambda x: x.home_odds * x.away_odds + x.game_complete,
                 )
                 try:
-                    mechanics = get_team_game("Mechanics", tomorrow)
+                    favored = get_team_game(TEAM, tomorrow)
                     # Reposition followed team to the front
-                    tomorrow.remove(mechanics)
-                    tomorrow.insert(0, mechanics)
+                    tomorrow.remove(favored)
+                    tomorrow.insert(0, favored)
                 except ValueError:
                     pass
 
                 game_widgets = render_games(today, leagues.stadiums)
-                forecast = little_game(tomorrow[0])
-                layout["highlight"].update(Columns((next(game_widgets), forecast), expand=True))
+                try:
+                    forecast = little_game(tomorrow[0])
+                    layout["highlight"].update(Columns((next(game_widgets), forecast), expand=True))
+                except IndexError:
+                    layout["highlight"].update(next(game_widgets))
                 layout["games"].update(
                     Columns(game_widgets, equal=True, expand=True)
                 )

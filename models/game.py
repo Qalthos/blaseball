@@ -10,7 +10,8 @@ from models.postseason import Postseason
 
 
 class SimState(FixedModel):
-    pass
+    phase_on_hold: Optional[int]
+    scheduled_game_event: Optional[datetime]
 
 
 class SimData(FixedModel):
@@ -79,10 +80,18 @@ class GamePostseason(FixedModel):
     playoff_id: UUID
 
 
+class EgoPlayerData(FixedModel):
+    id: UUID
+    team: Optional[UUID]
+    location: Optional[int]
+    hall_player: bool
+
+
 class GameState(FixedModel):
     holiday_inning: Optional[bool]
     prize_match: Optional[Prize]
     postseason: Optional[GamePostseason]
+    ego_player_data: Optional[list[EgoPlayerData]]
 
 
 class Game(FixedModel):

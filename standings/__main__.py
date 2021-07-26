@@ -19,7 +19,7 @@ async def main() -> None:
             if (games := stream_data.games) and leagues is not None:
                 if games.sim.day < 99:
                     game_data = season.get_standings(games, leagues)
-                    display.update_standings(game_data, games.sim.day + 1)
+                    display.update_standings(game_data, games.sim)
                 else:
                     postseason_data = postseason.get_playoffs(games, leagues)
                     display.update_postseason(postseason_data)

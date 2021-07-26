@@ -97,6 +97,9 @@ def estimate(team: Team, to_beat: Team, standings: Standings, tiebreak: Tiebreak
         difference += 1
 
     played = standings.games_played[team.id]
+    if played == 0:
+        # We literally have nothing to go on
+        return -1
     return int((99 * played) / (difference + played)) + 1
 
 

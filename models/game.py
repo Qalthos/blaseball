@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from uuid import UUID
 
 from blaseball_mike.models import Player
@@ -15,7 +15,7 @@ class SimState(FixedModel):
 
 
 class SimData(FixedModel):
-    id: str
+    id: Literal["thisidisstaticyo"]
     day: int
     league: UUID
     next_phase_time: datetime
@@ -92,6 +92,7 @@ class GameState(FixedModel):
     prize_match: Optional[Prize]
     postseason: Optional[GamePostseason]
     ego_player_data: Optional[list[EgoPlayerData]]
+    game_cancelled: Optional[bool]
 
 
 class Game(FixedModel):

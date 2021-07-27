@@ -212,6 +212,13 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
                 changes.append("\n  ")
                 changes.append(LOSE)
                 changes.append(mod)
+        elif entry["type"] == 135:
+            # Changing divisions
+            changes = Text.assemble(
+                metadata["fromDivisionName"],
+                " -> ",
+                metadata["toDivisionName"],
+            )
         elif entry["type"] == 144:
             # Exchange modifications
             mod_type = ModColor(metadata["type"]).name
@@ -324,6 +331,15 @@ def _do_feed(feed: list[JSON], excludes: list[str]) -> Table:
             changes = Text.assemble(
                 f"{metadata['before']:0.2f} -> ",
                 (f"{metadata['after']:0.2f}", "green"),
+            )
+        elif entry["type"] == 210:
+            # New League Mod
+            if metadata["mod"] in excludes:
+                continue
+            mod_type = ModColor(metadata["type"]).name
+            changes = Text.assemble(
+                GAIN,
+                (f"{metadata['mod']}", mod_type),
             )
         elif entry["type"] == 217:
             # Sun pressure building

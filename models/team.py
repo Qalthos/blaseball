@@ -147,6 +147,12 @@ class Stadium(FixedModel):
     state: StadiumState
 
 
+class Scattered(FixedModel):
+    full_name: str
+    location: str
+    nickname: str
+
+
 class StolenPlayer(FixedModel):
     id: UUID
     victim_index: int
@@ -154,14 +160,23 @@ class StolenPlayer(FixedModel):
     victim_location: int
 
 
+class ImmateriaMotion(FixedModel):
+    day: int
+    season: int
+    imPosition: tuple[float, float]
+
+
 class TeamState(FixedModel):
     donated_shame: Optional[float]
     halfinning_plays: Optional[int]
     overflow_runs: Optional[float]
     redacted: Optional[bool]
+    scattered: Optional[Scattered]
+    nullified: Optional[bool]
     stolen_players: Optional[list[StolenPlayer]]
     perm_mod_sources: Optional[dict[str, list[str]]]
     game_mod_sources: Optional[dict[str, list[str]]]
+    imp_motion: Optional[list[ImmateriaMotion]]
 
 
 class Team(FixedModel):

@@ -1,5 +1,4 @@
-from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional, Union
+from typing import Dict, List, NamedTuple
 
 from models.game import GamesData, Standings
 from models.league import Division, LeagueData, Subleague, Tiebreakers
@@ -7,7 +6,6 @@ from models.team import Team
 
 
 class Row(NamedTuple):
-    badge: str
     name: str
     color: str
     tiebreaker: int
@@ -18,8 +16,6 @@ class Row(NamedTuple):
     losses: int
     nonlosses: int
     over: int
-    under: int
-    party: int
     subleague: str
     division: str
     id: str
@@ -35,7 +31,10 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
     division_teams = [t for t in subleague_teams if t[2] == ateam[2]]
     nondivision_teams = [t for t in subleague_teams if t not in division_teams]
 
-    overbracket = [division_teams[0], nondivision_teams[0]]
+    overbracket = [division_teams[0]]
+    if nondivision_teams:
+        overbracket.append(nondivision_teams[0])
+
     for t in subleague_teams:
         if t not in overbracket:
             overbracket.append(t)
@@ -43,31 +42,19 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
             break
     overbracket = sort_teams(overbracket, standings, tiebreak)
 
-    underbracket = [division_teams[-1], nondivision_teams[-1]]
-    for t in subleague_teams[::-1]:
-        if t not in underbracket:
-            underbracket.append(t)
-        if len(underbracket) == 4:
-            break
-    underbracket = sort_teams(underbracket, standings, tiebreak)
-    middling = [
-        t for t in subleague_teams
-        if (t not in overbracket)
-        and (t not in underbracket)
-    ]
+    middling = [t for t in subleague_teams if t not in overbracket]
 
-    # TODO: Fix these for the case of division leader in last place
-    overbracket_cutoff = middling[0][0]
-    underbracket_cutoff = middling[-1][0]
-
-    party_cutoff = overbracket[-1][0]
-    if party_cutoff == nondivision_teams[0][0]:
-        # Beating this team does nothing, they get in regardless
-        party_cutoff = overbracket[-2][0]
+    if middling:
+        overbracket_cutoff = middling[0][0]
+    else:
+        overbracket_cutoff = overbracket[-1][0]
+    if ateam == division_teams[0] == overbracket[-1]:
+        for t in middling:
+            if t in division_teams:
+                overbracket_cutoff = t[0]
+                break
 
     over = estimate(team, overbracket_cutoff, standings, tiebreak)
-    under = estimate(underbracket_cutoff, team, standings, tiebreak)
-    party = estimate(party_cutoff, team, standings, tiebreak)
 
     games_played = standings.games_played[team.id]
     losses = standings.losses[team.id]
@@ -81,11 +68,8 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         wins=standings.wins[team.id],
         losses=losses,
         nonlosses=games_played - losses,
-        badge="",
         tiebreaker=tiebreak.order.index(team.id) + 1,
         over=over,
-        under=under,
-        party=party,
         subleague=subleague.name,
         division=division.name,
     )
@@ -97,10 +81,11 @@ def estimate(team: Team, to_beat: Team, standings: Standings, tiebreak: Tiebreak
         difference += 1
 
     played = standings.games_played[team.id]
-    if played == 0:
-        # We literally have nothing to go on
+    try:
+        return int((99 * played) / (difference + played)) + 1
+    except ZeroDivisionError:
+        # TODO: Uhhhh
         return -1
-    return int((99 * played) / (difference + played)) + 1
 
 
 def league_teams(league: LeagueData) -> list[ATeam]:
@@ -131,7 +116,9 @@ def get_standings(game_data: GamesData, league_data: LeagueData) -> Prediction:
         tb for tb in league_data.tiebreakers
         if tb.id == league.tiebreakers
     ))
-    predictions: Prediction = defaultdict(list)
+    predictions: Prediction = {
+        subleague.name: [] for subleague in league_data.subleagues
+    }
     teams = league_teams(league_data)
     teams = sort_teams(teams, game_data.standings, tiebreaker)
     for ateam in teams:

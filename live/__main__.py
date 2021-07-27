@@ -277,13 +277,12 @@ async def main() -> None:
         expand=True,
     )
     chest = league_progress.add_task("Community Chest", total=3000)
-    sunsun = league_progress.add_task("Sun(Sun)")
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
         Layout(name="highlight"),
         Layout(name="games"),
-        Layout(name="progress", size=2),
+        Layout(name="progress", size=1),
     )
     layout["phase"].update(phase_progress)
     layout["games"].update(Text())
@@ -298,8 +297,6 @@ async def main() -> None:
                 leagues = stream_data.leagues
                 chest_stats = leagues.stats.community_chest
                 league_progress.update(chest, completed=chest_stats.runs)
-                sun_stats = leagues.stats.sunsun
-                league_progress.update(sunsun, completed=sun_stats.current, total=sun_stats.maximum)
             if leagues is None:
                 continue
 

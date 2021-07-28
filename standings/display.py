@@ -14,10 +14,8 @@ layout = Layout()
 layout.split(
     Layout(name="header"),
     Layout(name="content"),
-    Layout(name="footer"),
 )
 layout["header"].size = 1
-layout["footer"].size = 1
 
 
 def clip_championships(row) -> str:

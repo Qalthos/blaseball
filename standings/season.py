@@ -128,7 +128,9 @@ def get_standings(game_data: GamesData, league_data: LeagueData) -> Prediction:
         tb for tb in league_data.tiebreakers
         if tb.id == league.tiebreakers
     ))
-    predictions: Prediction = defaultdict(list)
+    predictions: Prediction = {
+        subleague.name: [] for subleague in league_data.subleagues
+    }
     teams = league_teams(league_data)
     teams = sort_teams(teams, game_data.standings, tiebreaker)
     for ateam in teams:

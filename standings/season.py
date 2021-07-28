@@ -52,16 +52,16 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         overbracket_cutoff = middling[0][0]
     else:
         overbracket_cutoff = overbracket[-1][0]
-    # if ateam == division_teams[0] == overbracket[-1]:
-    #     for t in middling + underbracket:
-    #         if t in division_teams:
-    #             overbracket_cutoff = t[0]
-    #             break
+    if ateam == division_teams[0] == overbracket[-1]:
+        for t in middling:
+            if t in division_teams:
+                overbracket_cutoff = t[0]
+                break
 
     party_cutoff = overbracket[-1][0]
-    # if party_cutoff == nondivision_teams[0][0]:
-    #     # Beating this team does nothing, they get in regardless
-    #     party_cutoff = overbracket[-2][0]
+    if party_cutoff == nondivision_teams[0][0]:
+        # Beating this team does nothing, they get in regardless
+        party_cutoff = overbracket[-2][0]
 
     over = estimate(team, overbracket_cutoff, standings, tiebreak)
     party = estimate(party_cutoff, team, standings, tiebreak)

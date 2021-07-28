@@ -57,27 +57,24 @@ def update_standings(data: Prediction, sim: SimData) -> None:
 
             wang = f"{row.wins - row.nonlosses:+}"
 
-            closest = min(row.over, row.under)
-            if closest < 0:
+            postseason = str(row.over)
+            if row.over < 0:
                 postseason = ""
-            elif closest > 99:
+            elif row.over > 99:
                 postseason = "🃏"
-            elif closest <= sim.day:
+            elif row.over <= sim.day:
                 postseason = "👑"
-            else:
-                postseason = str(closest)
 
+            party = str(row.party)
             if row.party < 0:
                 party = ""
             elif row.party > 99:
                 party = "😐"
             elif row.party <= sim.day:
                 party = "🥳"
-            else:
-                party = str(row.party)
 
             table.add_row(
-                row.division.split()[1][0],
+                row.division[0],
                 Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
                 clip_championships(row),
                 f"{'*' if row.in_progress else ''}{row.wins}",

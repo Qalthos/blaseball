@@ -58,10 +58,8 @@ def update_standings(data: Prediction, sim: SimData) -> None:
             wang = f"{row.wins - row.nonlosses:+}"
 
             postseason = str(row.over)
-            if row.over < 0:
+            if row.over < 0 or row.over > 99:
                 postseason = ""
-            elif row.over > 99:
-                postseason = "🃏"
             elif row.over <= sim.day:
                 postseason = "👑"
 

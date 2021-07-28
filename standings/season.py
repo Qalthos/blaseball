@@ -34,7 +34,6 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
     division_teams = [t for t in subleague_teams if t[2] == ateam[2]]
     nondivision_teams = [t for t in subleague_teams if t not in division_teams]
 
-    # TODO: Uhhhhhhh...
     overbracket = [division_teams[0]]
     if nondivision_teams:
         overbracket.append(nondivision_teams[0])

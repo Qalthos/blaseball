@@ -49,7 +49,6 @@ def update_standings(data: Prediction, sim: SimData) -> None:
         table.add_column("Wins", width=3, justify="right")
         table.add_column("WANG", width=3, justify="right")
         table.add_column("Record", width=5, justify="right")
-        table.add_column("Party", width=2, justify="right")
         table.add_column("Postseason", width=2, justify="right")
         for row in rows:
 
@@ -61,14 +60,6 @@ def update_standings(data: Prediction, sim: SimData) -> None:
             elif row.over <= sim.day:
                 postseason = "👑"
 
-            party = str(row.party)
-            if row.party < 0:
-                party = ""
-            elif row.party > 99:
-                party = "😐"
-            elif row.party <= sim.day:
-                party = "🥳"
-
             table.add_row(
                 row.division[0],
                 Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
@@ -76,7 +67,6 @@ def update_standings(data: Prediction, sim: SimData) -> None:
                 f"{'*' if row.in_progress else ''}{row.wins}",
                 wang,
                 f"{row.nonlosses}-{row.losses}",
-                party,
                 postseason,
             )
 

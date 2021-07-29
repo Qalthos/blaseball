@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict, List, NamedTuple
 
 from models.game import GamesData, Standings
@@ -18,7 +17,6 @@ class Row(NamedTuple):
     losses: int
     nonlosses: int
     over: int
-    party: int
     subleague: str
     division: str
     id: str
@@ -57,13 +55,7 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
                 overbracket_cutoff = t[0]
                 break
 
-    party_cutoff = overbracket[-1][0]
-    if party_cutoff == nondivision_teams[0][0]:
-        # Beating this team does nothing, they get in regardless
-        party_cutoff = overbracket[-2][0]
-
     over = estimate(team, overbracket_cutoff, standings, tiebreak)
-    party = estimate(party_cutoff, team, standings, tiebreak)
 
     games_played = standings.games_played[team.id]
     losses = standings.losses[team.id]
@@ -80,7 +72,6 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         badge="",
         tiebreaker=tiebreak.order.index(team.id) + 1,
         over=over,
-        party=party,
         subleague=subleague.name,
         division=division.name,
     )

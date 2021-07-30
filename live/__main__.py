@@ -270,23 +270,14 @@ async def main() -> None:
         expand=True,
     )
     phase = phase_progress.add_task("Phase")
-    league_progress = Progress(
-        "[progress.description]{task.description}",
-        BarColumn(),
-        "[progress.percentage]{task.completed:g}/{task.total}",
-        expand=True,
-    )
-    chest = league_progress.add_task("Community Chest", total=3000)
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
         Layout(name="highlight"),
         Layout(name="games"),
-        Layout(name="progress", size=1),
     )
     layout["phase"].update(phase_progress)
     layout["games"].update(Text())
-    layout["progress"].update(league_progress)
 
     leagues = None
     with Live(layout, auto_refresh=False) as live:
@@ -295,8 +286,6 @@ async def main() -> None:
 
             if stream_data.leagues:
                 leagues = stream_data.leagues
-                chest_stats = leagues.stats.community_chest
-                league_progress.update(chest, completed=chest_stats.runs)
             if leagues is None:
                 continue
 

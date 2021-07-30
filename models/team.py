@@ -172,6 +172,7 @@ class TeamState(FixedModel):
     overflow_runs: Optional[float]
     redacted: Optional[bool]
     scattered: Optional[Scattered]
+    nullified: Optional[bool]
     stolen_players: Optional[list[StolenPlayer]]
     perm_mod_sources: Optional[dict[str, list[str]]]
     game_mod_sources: Optional[dict[str, list[str]]]

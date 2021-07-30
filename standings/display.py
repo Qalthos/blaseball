@@ -8,7 +8,7 @@ from models.game import SimData
 from standings.postseason import Brackets
 from standings.season import Prediction
 
-BRACKETS = ("overbracket", "underbracket")
+TEAM_URL = "[{color}][link=https://www.blaseball.com/team/{id!s}]{name}[/]"
 
 layout = Layout()
 layout.split(
@@ -44,6 +44,7 @@ def update_standings(data: Prediction, sim: SimData) -> None:
     for subleague, rows in data.items():
         table = Table.grid(padding=(0, 1), expand=True)
         table.add_column("Division", width=1)
+        table.add_column("Tiebreaker", width=2, justify="right")
         table.add_column("Name")
         table.add_column("Championships", width=2)
         table.add_column("Wins", width=3, justify="right")
@@ -62,7 +63,8 @@ def update_standings(data: Prediction, sim: SimData) -> None:
 
             table.add_row(
                 row.division[0],
-                Text.assemble((row.name, row.color), f"[{row.tiebreaker}]"),
+                str(row.tiebreaker),
+                TEAM_URL.format(name=row.name, id=row.id, color=row.color),
                 clip_championships(row),
                 f"{'*' if row.in_progress else ''}{row.wins}",
                 wang,

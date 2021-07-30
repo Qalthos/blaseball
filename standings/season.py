@@ -6,7 +6,6 @@ from models.team import Team
 
 
 class Row(NamedTuple):
-    badge: str
     name: str
     color: str
     tiebreaker: int
@@ -69,7 +68,6 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings: Stan
         wins=standings.wins[team.id],
         losses=losses,
         nonlosses=games_played - losses,
-        badge="",
         tiebreaker=tiebreak.order.index(team.id) + 1,
         over=over,
         subleague=subleague.name,

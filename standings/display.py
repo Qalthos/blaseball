@@ -62,7 +62,8 @@ def update_standings(data: Prediction, sim: SimData) -> None:
                 postseason = "👑"
 
             table.add_row(
-                row.division[0],
+                # First word in the division is the Subleague again, skip it
+                row.division.split(" ", 1)[1][0],
                 str(row.tiebreaker),
                 TEAM_URL.format(name=row.name, id=row.id, color=row.color),
                 clip_championships(row),

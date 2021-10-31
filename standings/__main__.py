@@ -1,9 +1,9 @@
 import asyncio
 
 from blaseball_mike.events import stream_events
+from blaseball_mike.stream_model import StreamData
 from rich.live import Live
 
-from models.live import StreamData
 from standings import display, postseason, season
 
 
@@ -11,7 +11,7 @@ async def main() -> None:
     leagues = None
     with Live(display.layout, auto_refresh=False) as live:
         async for event in stream_events():
-            stream_data = StreamData.parse_obj(event)
+            stream_data = StreamData(event)
 
             if stream_data.leagues:
                 leagues = stream_data.leagues

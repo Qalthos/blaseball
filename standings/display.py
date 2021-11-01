@@ -61,6 +61,13 @@ def update_standings(data: Prediction, sim: SimData) -> None:
             elif row.over <= sim.day:
                 postseason = "👑"
 
+            if not postseason:
+                postseason = str(row.party)
+                if row.party < 0 or row.party > 99:
+                    postseason = ""
+                elif row.party <= sim.day:
+                    postseason = "🥳"
+
             table.add_row(
                 # First word in the division is the Subleague again, skip it
                 row.division.split(" ", 1)[1][0],

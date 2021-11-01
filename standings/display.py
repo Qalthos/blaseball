@@ -5,7 +5,7 @@ from rich.table import Table
 from rich.text import Text
 
 from models.game import SimData
-from standings.postseason import Brackets
+from standings.postseason import PlayoffStandings
 from standings.season import Prediction
 
 TEAM_URL = "[{color}][link=https://www.blaseball.com/team/{id!s}]{name}[/]"
@@ -81,37 +81,31 @@ def update_standings(data: Prediction, sim: SimData) -> None:
     layout["content"].update(Columns(widgets, expand=True))
 
 
-def update_postseason(data: Brackets) -> None:
-    for bracket, leagues in data.items():
-        if bracket == "overbracket":
-            layout["header"].update(
-                Text(f"{leagues['name']} {leagues['round']}", justify="center")
-            )
-        else:
-            layout["footer"].update(
-                Text(f"{leagues['name']} {leagues['round']}", justify="center")
-            )
-        for subleague, games in leagues["games"].items():
-            tables = []
-            for game in games.values():
-                table = Table.grid(expand=True)
-                table.add_column("Seed", width=1)
-                table.add_column("Name")
-                table.add_column("Championships", width=2)
-                table.add_column("Wins", width=1)
-                for row in game:
-                    table.add_row(
-                        str(row.seed),
-                        f"[{row.color}]{row.name}[/]",
-                        clip_championships(row),
-                        str(row.wins),
-                    )
-                tables.append(Layout(table))
+def update_postseason(data: PlayoffStandings) -> None:
+    layout["header"].update(
+        Text(f"{data['name']} {data['round']}", justify="center")
+    )
+    for subleague, games in data["games"].items():
+        tables = []
+        for game in games.values():
+            table = Table.grid(expand=True)
+            table.add_column("Seed", width=1)
+            table.add_column("Name")
+            table.add_column("Championships", width=2)
+            table.add_column("Wins", width=1)
+            for row in game:
+                table.add_row(
+                    str(row.seed),
+                    f"[{row.color}]{row.name}[/]",
+                    clip_championships(row),
+                    str(row.wins),
+                )
+            tables.append(Layout(table))
 
-            all_tables = Layout()
-            all_tables.split(*tables)
-            layout[bracket][subleague].update(Panel(
-                all_tables,
-                title=subleague,
-                padding=0
-            ))
+        all_tables = Layout()
+        all_tables.split(*tables)
+        layout[subleague].update(Panel(
+            all_tables,
+            title=subleague,
+            padding=0
+        ))

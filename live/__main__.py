@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Generator
 
 from blaseball_mike.events import stream_events
-from blaseball_mike.models import Weather
+from blaseball_mike.models import Game
+from blaseball_mike.stream_model import Sim, StreamData
+from dateutil.parser import parse
 from rich.columns import Columns
 from rich.console import RenderGroup
 from rich.layout import Layout
@@ -13,10 +15,6 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
-
-from models.game import Game, SimData
-from models.live import StreamData
-from models.team import Stadium
 
 TEAM_URL = "https://www.blaseball.com/team"
 PLAYER_URL = "https://www.blaseball.com/player"
@@ -32,9 +30,6 @@ def inning(game: Game) -> Text:
         if game.shame:
             style = "#800878"
             inning = "SHAME"
-        elif game.state.holiday_inning:
-            style = "#ff66f9"
-            inning = "PARTY"
         elif game.game_complete:
             style = "red"
             inning = "FINAL"
@@ -42,7 +37,7 @@ def inning(game: Game) -> Text:
             style = "green"
             inning = "LIVE"
 
-        inning += f" - {game.inning + 1:X}"
+        inning += f" - {game.inning:X}"
         if not game.game_complete:
             inning += "▲" if game.top_of_inning else "▼"
 
@@ -70,7 +65,7 @@ def update(game: Game) -> str:
     update = "\n"
     if game.game_complete:
         update += "\n".join(game.outcomes)
-    else:
+    elif game.last_update:
         update += game.last_update
     if game.score_ledger:
         update += f"\n[#c4c4c4]{game.score_ledger}[/]"
@@ -84,68 +79,56 @@ def update(game: Game) -> str:
     return update
 
 
-def phase_time(sim: SimData) -> tuple[str, int, int]:
+def phase_time(sim: Sim) -> tuple[str, int, int]:
+    end = sim.next_phase_time
     if sim.phase == 0:
         phase = "Rest"
         start = sim.gods_day_date
-        end = sim.preseason_date
     elif sim.phase == 1:
         phase = "Earlseason"
         start = sim.preseason_date
-        end = sim.earlseason_date
     elif sim.phase == 2:
         phase = "Earlseason"
         start = sim.earlseason_date
-        end = sim.earlsiesta_date
     elif sim.phase == 3:
         phase = "Earlsiesta"
         start = sim.earlsiesta_date
-        end = sim.midseason_date
     elif sim.phase == 4:
         phase = "Midseason"
         start = sim.midseason_date
-        end = sim.latesiesta_date
     elif sim.phase == 5:
         phase = "Latesiesta"
         start = sim.latesiesta_date
-        end = sim.lateseason_date
     elif sim.phase == 6:
         phase = "Lateseason"
         start = sim.lateseason_date
-        end = sim.endseason_date
     elif sim.phase == 7:
         phase = "Endseason"
         start = sim.endseason_date
-        end = sim.earlpostseason_date
     elif sim.phase == 8:
         phase = "Prepostseason"
         start = sim.endseason_date
-        end = sim.earlpostseason_date
     elif sim.phase == 9:
         phase = "Earlpostseason"
         start = sim.earlpostseason_date
-        end = sim.latepostseason_date
     elif sim.phase == 10:
         phase = "Postearlpostseason"
         start = sim.earlpostseason_date
-        end = sim.latepostseason_date
     elif sim.phase == 11:
         phase = "Latepostseason"
         start = sim.latepostseason_date
-        end = sim.election_date
     elif sim.phase == 12:
         phase = "Postpostseason"
         start = sim.latepostseason_date
-        end = sim.election_date
     elif sim.phase == 13:
         phase = "Election"
         start = sim.election_date
-        end = sim.gods_day_date + timedelta(days=7)
+        end = sim.next_season_start
     else:
         raise Exception(f"Not sure what phase {sim.phase} is")
     now = datetime.now(tz=timezone.utc)
-    current = int((now - start).total_seconds())
-    total = int((end - start).total_seconds())
+    current = int((now - parse(start)).total_seconds())
+    total = int((end - parse(start)).total_seconds())
     return phase, current, total
 
 
@@ -156,8 +139,7 @@ def get_team_game(nickname: str, schedule: list[Game]) -> Game:
     raise ValueError(f"{nickname} is not playing at that time")
 
 
-def big_game(game: Game, stadium: Stadium) -> Panel:
-    weather = Weather.load_one(game.weather).name
+def big_game(game: Game) -> Panel:
     if game.is_postseason:
         series = f"First to ±{game.series_length}"
     else:
@@ -168,7 +150,7 @@ def big_game(game: Game, stadium: Stadium) -> Panel:
     info.add_column()
     info.add_column(justify="right")
 
-    info.add_row(inning(game), weather, series)
+    info.add_row(inning(game), game.weather.name, series)
     info.add_row(
         LINK.format(url=TEAM_URL, id=game.away_team, name=game.away_team_name),
         LINK.format(url=PLAYER_URL, id=game.away_pitcher, name=game.away_pitcher_name),
@@ -194,11 +176,6 @@ def big_game(game: Game, stadium: Stadium) -> Panel:
         batter = LINK.format(url=PLAYER_URL, id=game.home_batter, name=game.home_batter_name)
 
     runners = ["", "", "", ""]
-    secret = ""
-    if "SECRET_BASE" in stadium.mods:
-        if game.secret_baserunner:
-            secret = LINK.format(url=PLAYER_URL, id=game.secret_baserunner, name=game.secret_baserunner_name)
-        secret += "🔒"
     for base, runner_id, runner in zip(game.bases_occupied, game.base_runners, game.base_runner_names):
         runners[base] = LINK.format(url=PLAYER_URL, id=runner_id, name=runner)
 
@@ -208,7 +185,7 @@ def big_game(game: Game, stadium: Stadium) -> Panel:
     state.add_column(ratio=1)
     state.add_row(
         f"B {'●' * game.at_bat_balls}{'○' * (total_balls - game.at_bat_balls - 1)}",
-        secret,
+        "",
         f"2 {runners[1]}",
     )
     state.add_row(
@@ -231,12 +208,10 @@ def big_game(game: Game, stadium: Stadium) -> Panel:
 
 
 def little_game(game: Game) -> Panel:
-    weather = Weather.load_one(game.weather).name
-
     grid = Table.grid(expand=True)
     grid.add_column()
     grid.add_column(justify="right")
-    grid.add_row(inning(game), weather)
+    grid.add_row(inning(game), game.weather.name)
     grid.add_row(game.away_team_nickname, f"{game.away_score:g}")
     grid.add_row(game.home_team_nickname, f"{game.home_score:g}")
 
@@ -244,22 +219,9 @@ def little_game(game: Game) -> Panel:
     return Panel(RenderGroup(grid, update(game)), width=30, border_style=style)
 
 
-def render_games(games: list[Game], stadia: list[Stadium]) -> Generator[Panel, None, None]:
-    highlight = None
-    stadium = None
+def render_games(games: list[Game]) -> Generator[Panel, None, None]:
     for game in games:
-        if game.game_start and not game.game_complete:
-            highlight = game
-            break
-    else:
-        highlight = games[0]
-    stadium = [stadium for stadium in stadia if stadium.id == highlight.stadium_id][0]
-    if not highlight.game_complete:
-        yield big_game(highlight, stadium)
-
-    for game in games:
-        if game.game_complete or game is not highlight:
-            yield little_game(game)
+        yield little_game(game)
 
 
 async def main() -> None:
@@ -273,7 +235,6 @@ async def main() -> None:
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
-        Layout(name="highlight"),
         Layout(name="games"),
     )
     layout["phase"].update(phase_progress)
@@ -282,7 +243,7 @@ async def main() -> None:
     leagues = None
     with Live(layout, auto_refresh=False) as live:
         async for event in stream_events():
-            stream_data = StreamData.parse_obj(event)
+            stream_data = StreamData(event)
 
             if stream_data.leagues:
                 leagues = stream_data.leagues
@@ -299,7 +260,7 @@ async def main() -> None:
                 )
 
                 today = sorted(
-                    games.schedule,
+                    games.schedule.games.values(),
                     key=lambda x: x.home_odds * x.away_odds + x.game_complete,
                 )
                 try:
@@ -309,24 +270,8 @@ async def main() -> None:
                     today.insert(0, favored)
                 except ValueError:
                     pass
-                tomorrow = sorted(
-                    games.tomorrow_schedule,
-                    key=lambda x: x.home_odds * x.away_odds + x.game_complete,
-                )
-                try:
-                    favored = get_team_game(TEAM, tomorrow)
-                    # Reposition followed team to the front
-                    tomorrow.remove(favored)
-                    tomorrow.insert(0, favored)
-                except ValueError:
-                    pass
 
-                game_widgets = render_games(today, leagues.stadiums)
-                try:
-                    forecast = little_game(tomorrow[0])
-                    layout["highlight"].update(Columns((next(game_widgets), forecast), expand=True))
-                except IndexError:
-                    layout["highlight"].update(next(game_widgets))
+                game_widgets = render_games(today)
                 layout["games"].update(
                     Columns(game_widgets, equal=True, expand=True)
                 )

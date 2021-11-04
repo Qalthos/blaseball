@@ -76,7 +76,7 @@ def update(game: Game) -> str:
         elif "unrun" in game.score_update:
             color = "[red]"
         update += f" {color}{game.score_update}"
-    return update
+    return update.rstrip()
 
 
 def phase_time(sim: Sim) -> tuple[str, int, int]:

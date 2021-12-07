@@ -37,7 +37,7 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], standings, tiebreak: Tieb
     for t in subleague_teams:
         if t not in overbracket:
             overbracket.append(t)
-        if len(overbracket) == 4:
+        if len(overbracket) == 5:
             break
     overbracket = sort_teams(overbracket, standings, tiebreak)
 

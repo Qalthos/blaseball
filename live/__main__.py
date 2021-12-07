@@ -12,9 +12,10 @@ from rich.console import RenderGroup
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
-from rich.progress import BarColumn, Progress
+from rich.progress import BarColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 from rich.text import Text
+
 
 TEAM_URL = "https://www.blaseball.com/team"
 PLAYER_URL = "https://www.blaseball.com/player"
@@ -232,19 +233,28 @@ async def main() -> None:
         expand=True,
     )
     phase = phase_progress.add_task("Phase")
+    status_progress = Progress(
+        "[progress.description]{task.description}",
+        TimeElapsedColumn(),
+        SpinnerColumn(),
+        expand=True,
+    )
+    status = status_progress.add_task("Refresh")
     layout = Layout()
     layout.split(
         Layout(name="phase", size=1),
         Layout(name="games"),
+        Layout(name="footer", size=1),
     )
     layout["phase"].update(phase_progress)
+    layout["footer"].update(status_progress)
     layout["games"].update(Text())
 
     leagues = None
-    with Live(layout, auto_refresh=False) as live:
-        async for event in stream_events():
-            stream_data = StreamData(event)
-
+    with Live(layout):
+        async for stream_data in stream_events():
+            stream_data = StreamData(stream_data)
+            status_progress.reset(status)
             if stream_data.leagues:
                 leagues = stream_data.leagues
             if leagues is None:
@@ -275,8 +285,6 @@ async def main() -> None:
                 layout["games"].update(
                     Columns(game_widgets, equal=True, expand=True)
                 )
-
-            live.refresh()
 
 
 if __name__ == "__main__":

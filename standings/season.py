@@ -26,7 +26,7 @@ Tiebreak = dict[str, Team]
 ATeam = tuple[Team, Subleague, Division]
 
 
-def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings, tiebreak: Tiebreak) -> Row:
+def format_row(ateam: ATeam, other_teams: list[ATeam], standings, tiebreak: Tiebreak) -> Row:
     team, subleague, division = ateam
     subleague_teams = [t for t in other_teams if t[1] == ateam[1]]
     division_teams = [t for t in subleague_teams if t[2] == ateam[2]]
@@ -61,16 +61,17 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings, tieb
     over = estimate(team, overbracket_cutoff, standings, tiebreak)
     party = estimate(party_cutoff, team, standings, tiebreak)
 
-    games_played = standings.games_played[team.id]
-    losses = standings.losses[team.id]
+    games_played = standings.games_played.get(team.id, 0)
+    losses = standings.losses.get(team.id, 0)
     return Row(
         id=str(team.id),
         name=team.nickname,
         color=team.main_color,
         championships=team.championships,
         underchampionships=team.underchampionships,
-        in_progress=bool(games_played < (day + 1) < 100),
-        wins=standings.wins[team.id],
+        #  Uhhhh
+        in_progress=False,
+        wins=standings.wins.get(team.id, 0),
         losses=losses,
         nonlosses=games_played - losses,
         tiebreaker=list(tiebreak.order.keys()).index(team.id) + 1,
@@ -82,11 +83,11 @@ def format_row(ateam: ATeam, other_teams: list[ATeam], day: int, standings, tieb
 
 
 def estimate(team: Team, to_beat: Team, standings, tiebreak: Tiebreak) -> int:
-    difference = standings.wins[team.id] - standings.wins[to_beat.id]
+    difference = standings.wins.get(team.id, 0) - standings.wins.get(to_beat.id, 0)
     if list(tiebreak.order.keys()).index(to_beat.id) > list(tiebreak.order.keys()).index(team.id):
         difference += 1
 
-    played = standings.games_played[team.id]
+    played = standings.games_played.get(team.id, 0)
     try:
         return int((99 * played) / (difference + played)) + 1
     except ZeroDivisionError:
@@ -107,7 +108,7 @@ def sort_teams(teams: list[ATeam], standings, tiebreak) -> list[ATeam]:
     return sorted(
         teams,
         key=lambda t: (
-            standings.wins[t[0].id],
+            standings.wins.get(t[0].id, 0),
             -list(tiebreak.order.keys()).index(t[0].id),
         ),
         reverse=True,
@@ -127,7 +128,7 @@ def get_standings(game_data: StreamGames, league_data: StreamLeagues) -> Predict
     for ateam in teams:
         subleague = ateam[1]
         predictions[subleague.name].append(
-            format_row(ateam, teams, game_data.sim.day, game_data.standings, tiebreaker)
+            format_row(ateam, teams, game_data.standings, tiebreaker)
         )
 
     return predictions

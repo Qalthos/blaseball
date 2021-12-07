@@ -44,7 +44,7 @@ def get_playoffs(game_data: StreamGames, league_data: StreamLeagues) -> PlayoffS
     postseason = game_data.postseason
     games: Games = {
         subleague.name: defaultdict(list)
-        for subleague in league_data.subleagues
+        for subleague in league_data.subleagues.values()
     }
     for matchup in postseason.matchups:
         if matchup.away_team and matchup.away_seed is not None:

@@ -18,6 +18,15 @@ layout.split(
 layout["header"].size = 1
 
 
+def division(long_division: str):
+    short_div = long_division.split(" ")[0][0]
+    if short_div == "F":
+        return "❄"
+    if short_div == "M":
+        return "🔥"
+    return short_div
+
+
 def update_standings(data: Prediction, sim: SimData) -> None:
     layout["header"].update(
         Text(f"Season {sim.season + 1} Day {sim.day + 1}", justify="center")
@@ -51,11 +60,11 @@ def update_standings(data: Prediction, sim: SimData) -> None:
 
             table.add_row(
                 # First word in the division is the Subleague again, skip it
-                row.division.split(" ", 1)[1][0],
+                division(row.division),
                 str(row.tiebreaker),
                 TEAM_URL.format(name=row.name, id=row.id, color=row.color),
                 f"{'*' if row.in_progress else ''}{row.wins}",
-                wang,
+                str(row.nonlosses + row.losses),
                 f"{row.nonlosses}-{row.losses}",
                 postseason,
             )

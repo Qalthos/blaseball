@@ -1,8 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List, NamedTuple, TypedDict
 
-from blaseball_mike import models
-
 
 class Row(NamedTuple):
     seed: str

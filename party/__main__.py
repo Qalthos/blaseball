@@ -1,11 +1,11 @@
 from typing import List
-from pydantic import parse_obj_as
+
 import requests
+from pydantic import parse_obj_as
 
 from party import display, season
 from party.models.sim import Sim
 from party.models.team import Team
-
 
 API_BASE = "https://api2.sibr.dev/mirror/"
 

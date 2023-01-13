@@ -1,8 +1,7 @@
 from typing import Dict, List, NamedTuple, Optional
 
-from party.models.sim import Sim, Division, SubLeague
+from party.models.sim import Division, Sim, SubLeague
 from party.models.team import Team
-
 
 GAMES = 90
 
@@ -67,12 +66,12 @@ class SubleagueRanking:
 
     @property
     def playoff_teams(self) -> list[Team]:
-        playoff = []
-        others = []
+        playoff: list[Team] = []
+        others: list[Team] = []
         for division in self._divisions:
             playoff.append(division.playoff_team)
             others.extend(d for d in division._teams if d not in playoff)
-        playoff.extend(sort_teams(others)[:len(self._divisions)])
+        playoff.extend(sort_teams(others)[: len(self._divisions)])
         return playoff
 
     def add_team(self, team: Team) -> None:
@@ -85,9 +84,9 @@ class SubleagueRanking:
 
 
 def estimate_party_time(team: Team, needed: int) -> int:
-     """Return the estimated game the team will begin partying"""
-     played = team.standings[0].wins + team.standings[0].losses
-     return int((90 * played) / (needed + played)) + 1
+    """Return the estimated game the team will begin partying"""
+    played = team.standings[0].wins + team.standings[0].losses
+    return int((90 * played) / (needed + played)) + 1
 
 
 def sort_teams(teams: list[Team]) -> list[Team]:
@@ -134,6 +133,8 @@ def make_predictions(sim: Sim, teams: list[Team]) -> Prediction:
     predictions: Prediction = {sl.id: [] for sl in leagues}
     for subleague in leagues:
         for team in subleague.teams:
-            predictions[subleague.id].append(format_row(subleague, team, sim.simData.currentDay))
+            predictions[subleague.id].append(
+                format_row(subleague, team, sim.simData.currentDay)
+            )
 
     return predictions

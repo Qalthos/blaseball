@@ -22,7 +22,7 @@ def update_standings(title: str, data: Prediction) -> None:
     layout["header"].update(Panel(Text(title, justify="center")))
 
     widgets = []
-    for subleague, rows in data.items():
+    for conference, rows in data.items():
         teams = Table.grid(expand=True)
         teams.add_column("Name")
         teams.add_column("Wins", width=4, justify="right")
@@ -42,7 +42,7 @@ def update_standings(title: str, data: Prediction) -> None:
         widgets.append(
             Panel(
                 teams,
-                title=subleague,
+                title=conference,
                 padding=0,
             )
         )

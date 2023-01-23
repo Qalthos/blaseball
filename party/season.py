@@ -1,3 +1,4 @@
+import difflib
 from typing import Dict, List, NamedTuple, Optional
 
 from party.models.sim import Division, Sim, SubLeague
@@ -45,7 +46,7 @@ class DivisionRanking:
         self._teams.append(team)
 
 
-class SubleagueRanking:
+class ConferenceRanking:
     id: str
     _divisions: list[DivisionRanking]
 
@@ -58,6 +59,13 @@ class SubleagueRanking:
             if item in division:
                 return True
         return False
+
+    @property
+    def name(self) -> str:
+        div_a, div_b = (d.name for d in self._divisions)
+        match = difflib.SequenceMatcher(None, div_a, div_b).find_longest_match()
+        common_text = div_a[match.a : match.a + match.size]
+        return f"The {common_text.strip()} Conference"
 
     @property
     def teams(self) -> list[Team]:
@@ -96,7 +104,7 @@ def sort_teams(teams: list[Team]) -> list[Team]:
     return sorted(teams, key=lambda t: t.standings[0].wins, reverse=True)
 
 
-def format_row(subleague: SubleagueRanking, team: Team, day: int) -> Row:
+def format_row(subleague: ConferenceRanking, team: Team, day: int) -> Row:
     playoff = subleague.playoff_teams
     cutoff = playoff[-1]
     if team in playoff:
@@ -124,20 +132,20 @@ def format_row(subleague: SubleagueRanking, team: Team, day: int) -> Row:
 def make_predictions(sim: Sim, teams: list[Team]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
-    leagues: list[SubleagueRanking] = []
-    for subleague in sim.sim_data.current_league_data.sub_leagues:
-        leagues.append(SubleagueRanking(subleague))
+    conferences: list[ConferenceRanking] = []
+    for conference in sim.sim_data.current_league_data.sub_leagues:
+        conferences.append(ConferenceRanking(conference))
 
     for team in teams:
-        for subleague in leagues:
-            if team in subleague:
-                subleague.add_team(team)
+        for conference in conferences:
+            if team in conference:
+                conference.add_team(team)
 
-    predictions: Prediction = {sl.id: [] for sl in leagues}
-    for subleague in leagues:
-        for team in subleague.teams:
-            predictions[subleague.id].append(
-                format_row(subleague, team, sim.sim_data.current_day)
+    predictions: Prediction = {c.name: [] for c in conferences}
+    for conference in conferences:
+        for team in conference.teams:
+            predictions[conference.name].append(
+                format_row(conference, team, sim.sim_data.current_day)
             )
 
     return predictions

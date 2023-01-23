@@ -24,6 +24,7 @@ def update_standings(title: str, data: Prediction) -> None:
     widgets = []
     for conference, rows in data.items():
         teams = Table.grid(expand=True)
+        teams.add_column("Position")
         teams.add_column("Name")
         teams.add_column("Wins", width=4, justify="right")
         teams.add_column("Record", width=6, justify="right")
@@ -33,6 +34,7 @@ def update_standings(title: str, data: Prediction) -> None:
                 teams.add_row()
             else:
                 teams.add_row(
+                    str(row.position),
                     Text(row.name, row.color),
                     str(row.wins),
                     row.record,

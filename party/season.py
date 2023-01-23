@@ -10,6 +10,7 @@ GAMES = 90
 class Row(NamedTuple):
     name: str
     color: str
+    position: int
     wins: int
     record: str
     earliest: str
@@ -101,11 +102,13 @@ def estimate_party_time(team: Team, needed: int) -> int:
 
 
 def sort_teams(teams: list[Team]) -> list[Team]:
-    return sorted(teams, key=lambda t: t.standings[0].wins, reverse=True)
+    return sorted(
+        teams, key=lambda t: (t.standings[0].wins, -t.standings[0].losses), reverse=True
+    )
 
 
-def format_row(subleague: ConferenceRanking, team: Team, day: int) -> Row:
-    playoff = subleague.playoff_teams
+def format_row(conference: ConferenceRanking, team: Team, day: int) -> Row:
+    playoff = conference.playoff_teams
     cutoff = playoff[-1]
     if team in playoff:
         needed = team.standings[0].wins - cutoff.standings[0].wins
@@ -118,9 +121,16 @@ def format_row(subleague: ConferenceRanking, team: Team, day: int) -> Row:
 
     earliest = day + ((GAMES - day - needed) // 2) + 1
 
+    position = 0
+    for other in conference.teams:
+        position += 1
+        if team.standings[0].wins == other.standings[0].wins:
+            break
+
     return Row(
         id=team.id,
         name=team.name,
+        position=position,
         color=team.primary_color,
         wins=team.standings[0].wins,
         record=f"{team.standings[0].wins}-{team.standings[0].losses}",

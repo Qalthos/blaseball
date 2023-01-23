@@ -16,16 +16,12 @@ layout.split(
     Layout(name="content"),
 )
 layout["header"].size = 3
-layout["content"].split_row(
-    Layout(name="left"),
-    Layout(name="right"),
-)
-columns = iter(["left", "right"])
 
 
 def update_standings(title: str, data: Prediction) -> None:
     layout["header"].update(Panel(Text(title, justify="center")))
 
+    widgets = []
     for subleague, rows in data.items():
         teams = Table.grid(expand=True)
         teams.add_column("Name")
@@ -43,13 +39,14 @@ def update_standings(title: str, data: Prediction) -> None:
                     row.estimate,
                 )
 
-        layout[next(columns)].update(
+        widgets.append(
             Panel(
                 teams,
                 title=subleague,
                 padding=0,
             )
         )
+    layout["content"].update(Columns(widgets, expand=True))
 
 
 def display_loop(func: Callable) -> None:

@@ -1,6 +1,7 @@
 import time
 from collections.abc import Callable
 
+from rich.columns import Columns
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
@@ -42,11 +43,13 @@ def update_standings(title: str, data: Prediction) -> None:
                     row.estimate,
                 )
 
-        layout[next(columns)].update(Panel(
-            teams,
-            title=subleague,
-            padding=0,
-        ))
+        layout[next(columns)].update(
+            Panel(
+                teams,
+                title=subleague,
+                padding=0,
+            )
+        )
 
 
 def display_loop(func: Callable) -> None:

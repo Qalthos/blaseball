@@ -86,7 +86,10 @@ class SubleagueRanking:
 def estimate_party_time(team: Team, needed: int) -> int:
     """Return the estimated game the team will begin partying"""
     played = team.standings[0].wins + team.standings[0].losses
-    return int((90 * played) / (needed + played)) + 1
+    try:
+        return int((90 * played) / (needed + played)) + 1
+    except ZeroDivisionError:
+        return 30
 
 
 def sort_teams(teams: list[Team]) -> list[Team]:

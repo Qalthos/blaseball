@@ -20,7 +20,7 @@ def main() -> None:
     # Calcualte positions
     predictions = season.make_predictions(sim, teams)
     display.update_standings(
-        f"{sim.simData.currentLeagueData.name} Season {sim.simData.currentSeasonNumber + 1} Day {sim.simData.currentDay + 1}",
+        f"{sim.sim_data.current_league_data.name} Season {sim.sim_data.current_season_number + 1} Day {sim.sim_data.current_day + 1}",
         predictions,
     )
     print(display.layout)

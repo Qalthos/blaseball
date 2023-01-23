@@ -113,7 +113,7 @@ def format_row(subleague: SubleagueRanking, team: Team, day: int) -> Row:
     return Row(
         id=team.id,
         name=team.name,
-        color=team.primaryColor,
+        color=team.primary_color,
         wins=team.standings[0].wins,
         record=f"{team.standings[0].wins}-{team.standings[0].losses}",
         earliest=str(earliest) if earliest > day else "N/A",
@@ -125,7 +125,7 @@ def make_predictions(sim: Sim, teams: list[Team]) -> Prediction:
     """Get Blaseball data and return party time predictions"""
 
     leagues: list[SubleagueRanking] = []
-    for subleague in sim.simData.currentLeagueData.subLeagues:
+    for subleague in sim.sim_data.current_league_data.sub_leagues:
         leagues.append(SubleagueRanking(subleague))
 
     for team in teams:
@@ -137,7 +137,7 @@ def make_predictions(sim: Sim, teams: list[Team]) -> Prediction:
     for subleague in leagues:
         for team in subleague.teams:
             predictions[subleague.id].append(
-                format_row(subleague, team, sim.simData.currentDay)
+                format_row(subleague, team, sim.sim_data.current_day)
             )
 
     return predictions
